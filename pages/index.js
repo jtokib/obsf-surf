@@ -2,7 +2,6 @@ import Head from 'next/head';
 import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
 import SurfConditions from '../components/SurfConditions';
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export default function Home() {
     return (

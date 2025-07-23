@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/third-parties": "^15.4.3",
     "@vercel/speed-insights": "^1.2.0",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.2",
