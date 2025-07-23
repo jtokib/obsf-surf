@@ -20,15 +20,15 @@ export default function Layout({ children }) {
             setTimeout(() => setScanlineEffect(false), 3000);
         }, 15000);
 
-        // Keyboard listener for secret sequence "saki"
+        // Keyboard listener for secret sequence "kim"
         const handleKeyPress = (event) => {
             const key = event.key.toLowerCase();
 
             setKeySequence(prev => {
-                const newSequence = [...prev, key].slice(-4); // Keep only last 4 keys
+                const newSequence = [...prev, key].slice(-3); // Keep only last 3 keys
 
-                // Check if sequence spells "saki"
-                if (newSequence.join('') === 'saki') {
+                // Check if sequence spells "kim"
+                if (newSequence.join('') === 'kim') {
                     // Trigger love message
                     setLoveMessage('I LOVE YOU KIM!');
 
@@ -74,23 +74,6 @@ export default function Layout({ children }) {
         localStorage.setItem('dm', newMode ? '1' : '0');
     };
 
-    const handleLoveClick = () => {
-        const message = "I LOVE YOU KIM!";
-        setLoveMessage(loveMessage ? '' : message);
-
-        // Add some retro sound effect simulation
-        if (!loveMessage) {
-            document.body.style.animation = 'flash 0.1s ease-in-out 3';
-            setTimeout(() => {
-                document.body.style.animation = '';
-            }, 300);
-
-            // Auto-hide after 4 seconds
-            setTimeout(() => {
-                setLoveMessage('');
-            }, 4000);
-        }
-    };
 
     return (
         <div className={`layout ${darkMode ? 'dark-mode' : 'light-mode'} ${scanlineEffect ? 'scanline-effect' : ''}`}>
@@ -115,7 +98,7 @@ export default function Layout({ children }) {
             <footer className="footer">
                 <div className="container">
                     <p className="footer-text">
-                        Things <span onClick={handleLoveClick} className="clickable">Toki Burke</span> Is Not |
+                        Things Toki Burke Is Not |
                         &copy;{new Date().getFullYear()}&nbsp;|&nbsp;
                         <span onClick={toggleDarkMode} className="clickable">
                             {darkMode ? '🌅 Light Mode' : '🌙 Dark Mode'}
