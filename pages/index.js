@@ -25,17 +25,8 @@ export default function Home() {
                 <div className="container">
                     <HeroSection />
                     <SurfConditions />
-
-                    <div className="footer-text">
-                        <p>See ya in the water, kook! 🤙</p>
-                    </div>
                 </div>
             </main>
-
-            <ParallaxSection
-                imageUrl="https://source.unsplash.com/1920x1080/?surfing,ocean,waves"
-                alt="Random image of surfing and the ocean from Unsplash"
-            />
         </Layout>
     );
 }
