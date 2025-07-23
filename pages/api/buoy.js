@@ -24,10 +24,26 @@ export default async function handler(req, res) {
 
         const xmlData = await response.text();
         
+        // Log the raw XML response for troubleshooting
+        console.log('=== CDIP XML Response ===');
+        console.log('Response length:', xmlData.length);
+        console.log('First 500 characters:', xmlData.substring(0, 500));
+        console.log('Last 500 characters:', xmlData.substring(Math.max(0, xmlData.length - 500)));
+        console.log('Contains waveHs?', xmlData.includes('waveHs'));
+        console.log('Contains data tag?', xmlData.includes('<data'));
+        console.log('=== End XML Response ===');
+        
         // Parse XML response - look for the latest point data using the correct XML structure
         const waveHsMatch = xmlData.match(/<data name="waveHs"[^>]*>([^<]+)<\/data>/);
         const waveTpMatch = xmlData.match(/<data name="waveTp"[^>]*>([^<]+)<\/data>/);
         const waveDpMatch = xmlData.match(/<data name="waveDp"[^>]*>([^<]+)<\/data>/);
+        
+        // Log parsing results
+        console.log('=== XML Parsing Results ===');
+        console.log('waveHs match:', waveHsMatch);
+        console.log('waveTp match:', waveTpMatch);
+        console.log('waveDp match:', waveDpMatch);
+        console.log('=== End Parsing Results ===');
         
         if (waveHsMatch && waveTpMatch && waveDpMatch) {
             const formattedData = {
