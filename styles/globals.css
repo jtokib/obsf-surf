@@ -384,9 +384,40 @@ a {
     opacity: 0.3;
 }
 
-/* Surf Conditions */
+/* EPIC SURF CONDITIONS - CYBERPUNK STYLE */
 .surf-conditions {
     margin: 2rem 0;
+    background: var(--card-gradient);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 2px solid rgba(0, 255, 255, 0.6);
+    box-shadow: 
+        0 0 30px rgba(0, 255, 255, 0.4),
+        0 0 60px rgba(255, 20, 147, 0.2),
+        inset 0 0 30px rgba(0, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.surf-conditions::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        #00ffff, #ff1493, #00ff00, #ffa500, #00ffff
+    );
+    background-size: 300% 300%;
+    border-radius: 20px;
+    z-index: -1;
+    animation: cyberpunk-border 4s ease-in-out infinite;
+}
+
+@keyframes cyberpunk-border {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .conditions-header {
@@ -1153,6 +1184,373 @@ a {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* CYBERPUNK TIDE MATRIX - Enhanced Visualization */
+.tide-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    position: relative;
+}
+
+.tide-section::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(45deg, 
+        rgba(0, 255, 255, 0.1) 0%, 
+        rgba(255, 20, 147, 0.1) 25%,
+        rgba(0, 255, 0, 0.1) 50%,
+        rgba(255, 165, 0, 0.1) 75%,
+        rgba(0, 255, 255, 0.1) 100%
+    );
+    border-radius: 20px;
+    z-index: -1;
+    animation: cyberpunk-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes cyberpunk-glow {
+    0% { opacity: 0.3; }
+    100% { opacity: 0.7; }
+}
+
+.tide-graph-container {
+    background: var(--card-gradient);
+    border-radius: 20px;
+    border: 2px solid rgba(0, 255, 255, 0.6);
+    padding: 1.5rem;
+    box-shadow: 
+        0 0 20px rgba(0, 255, 255, 0.3),
+        0 0 40px rgba(0, 255, 255, 0.1),
+        inset 0 0 20px rgba(0, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.tide-graph-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(0, 255, 255, 0.2), 
+        transparent
+    );
+    animation: cyberpunk-scan 4s linear infinite;
+}
+
+@keyframes cyberpunk-scan {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.light-mode .tide-graph-container {
+    background: var(--light-card-gradient);
+    border: 1px solid rgba(0, 102, 102, 0.2);
+}
+
+.tide-graph-title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 900;
+    background: linear-gradient(45deg, 
+        #00ffff 0%, 
+        #ff1493 25%, 
+        #00ff00 50%, 
+        #ffa500 75%, 
+        #00ffff 100%
+    );
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 1rem 0;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: cyberpunk-text-glow 2s ease-in-out infinite alternate;
+    text-shadow: 
+        0 0 10px rgba(0, 255, 255, 0.5),
+        0 0 20px rgba(0, 255, 255, 0.3),
+        0 0 30px rgba(0, 255, 255, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes cyberpunk-text-glow {
+    0% { 
+        background-position: 0% 50%;
+        filter: brightness(1);
+    }
+    100% { 
+        background-position: 100% 50%;
+        filter: brightness(1.3);
+    }
+}
+
+.tide-graph {
+    width: 100%;
+    height: 200px;
+    background: rgba(0, 20, 40, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.light-mode .tide-graph {
+    background: rgba(230, 243, 255, 0.5);
+    border: 1px solid rgba(0, 102, 102, 0.1);
+}
+
+.tide-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    animation: cyberpunk-pulse 2s ease-in-out infinite;
+}
+
+@keyframes cyberpunk-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+.tide-table-container {
+    background: var(--card-gradient);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+.light-mode .tide-table-container {
+    background: var(--light-card-gradient);
+    border: 1px solid rgba(0, 102, 102, 0.2);
+}
+
+.tide-table-title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin: 0 0 1rem 0;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tide-table-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(0, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.light-mode .tide-table-header {
+    background: rgba(0, 102, 102, 0.1);
+}
+
+.header-cell {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tide-table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tide-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.light-mode .tide-row {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 102, 102, 0.1);
+}
+
+.tide-row.high-tide {
+    border-left: 4px solid #00bcd4;
+}
+
+.tide-row.low-tide {
+    border-left: 4px solid #ff7043;
+}
+
+.tide-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-cell .time-main {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.time-cell .time-date {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.height-cell .height-value {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.height-cell .height-unit {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.type-cell .tide-type {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* BLAZING FAST MOBILE OPTIMIZATION */
+@media (max-width: 768px) {
+    .tide-section {
+        gap: 1.5rem;
+    }
+    
+    .tide-graph {
+        height: 250px; /* Increased for better mobile viewing */
+    }
+    
+    .tide-graph-title {
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+    }
+    
+    .tide-table-header,
+    .tide-row {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 0.8rem;
+        padding: 1rem 0.5rem;
+    }
+    
+    .header-cell {
+        padding: 0.7rem 0;
+        font-size: 0.85rem;
+    }
+    
+    .tide-cell {
+        padding: 0.7rem 0;
+        border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    }
+    
+    .tide-cell:last-child {
+        border-bottom: none;
+    }
+    
+    /* Mobile-specific cyberpunk optimizations */
+    .surf-conditions {
+        padding: 1.5rem 1rem;
+        margin: 1rem 0;
+    }
+    
+    .conditions-summary {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .condition-item {
+        padding: 1.5rem 1rem;
+    }
+    
+    /* Reduce animation intensity on mobile for performance */
+    .cyberpunk-glow,
+    .cyberpunk-scan,
+    .cyberpunk-border {
+        animation-duration: 6s; /* Slower animations on mobile */
+    }
+    
+    /* Touch-friendly sizing */
+    .tab {
+        padding: 1rem 0.8rem;
+        min-height: 60px;
+    }
+    
+    .magic-button {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        min-height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tide-graph-title {
+        font-size: 1rem;
+        line-height: 1.2;
+        letter-spacing: 0.5px;
+    }
+    
+    .tide-graph {
+        height: 220px;
+    }
+    
+    .tide-section::before {
+        border-radius: 15px;
+    }
+    
+    .tide-graph-container,
+    .tide-table-container {
+        border-radius: 15px;
+        padding: 1rem;
+    }
+    
+    /* Ultra-compact mobile layout */
+    .surf-conditions {
+        padding: 1rem 0.5rem;
+        border-radius: 15px;
+    }
 }
 
 /* Footer */

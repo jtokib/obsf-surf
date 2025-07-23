@@ -33,7 +33,7 @@ export default function SurfConditions() {
 
     const fetchTideData = async () => {
         try {
-            const response = await fetch('/api/tides');
+            const response = await fetch('/api/tide');
             const data = await response.json();
             setTideData(data);
         } catch (error) {
@@ -133,6 +133,7 @@ export default function SurfConditions() {
 
             <motion.div className="conditions-summary" variants={itemVariants}>
                 <motion.div className="condition-item" whileHover={{ scale: 1.05 }}>
+                    <h3>🌊 SF Buoy</h3>
                     {loading ? (
                         <div className="loading-container">
                             <div className="loading-bar">
@@ -142,10 +143,9 @@ export default function SurfConditions() {
                         </div>
                     ) : buoyData ? (
                         <>
-                            <h3>🌊 SF Buoy</h3>
                             <div className="wave-data">
                                 <div className="wave-height">
-                                    {(buoyData.Hs * 3.281).toFixed(1)}ft
+                                    {parseFloat(buoyData.Hs).toFixed(1)}ft
                                 </div>
                                 <div className="wave-details">
                                     @ {buoyData.Tp}s • {buoyData.Dp}°
@@ -365,9 +365,6 @@ export default function SurfConditions() {
                 </AnimatePresence>
             </motion.div>
 
-            <motion.div className="footer-text" variants={itemVariants}>
-                <p>See ya in the water, kook! 🤙</p>
-            </motion.div>
         </motion.div>
     );
 }

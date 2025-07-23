@@ -4,8 +4,17 @@ export default async function handler(req, res) {
     }
 
     try {
-        const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-        const tidesUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=NOS.COOPS.TAC.WL&date=${today}&datum=MLLW&station=9414290&time_zone=lst_ldt&units=english&interval=hilo&format=json`;
+        // Get current date in YYYYMMDD format
+        const today = new Date();
+        const beginDate = today.toISOString().split('T')[0].replace(/-/g, '');
+        
+        // Get tomorrow's date for end_date
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const endDate = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
+        
+        // Corrected NOAA API URL with proper parameters
+        const tidesUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=jtokib_surf_app&begin_date=${beginDate}&end_date=${endDate}&datum=MLLW&station=9414290&time_zone=lst_ldt&units=english&interval=hilo&format=json`;
 
         const response = await fetch(tidesUrl, {
             headers: {
@@ -26,9 +35,31 @@ export default async function handler(req, res) {
         return res.status(200).json(data);
     } catch (error) {
         console.error('Tides API error:', error);
-        return res.status(500).json({
-            error: 'Failed to fetch tide data',
-            message: error.message
+        
+        // Fallback tide data if API fails
+        const now = new Date();
+        const mockTides = [
+            {
+                t: now.toISOString().split('T')[0] + ' 06:15',  
+                v: '5.2',
+                type: 'H'
+            },
+            {
+                t: now.toISOString().split('T')[0] + ' 12:30',
+                v: '1.8', 
+                type: 'L'
+            },
+            {
+                t: now.toISOString().split('T')[0] + ' 18:45',
+                v: '4.9',
+                type: 'H'
+            }
+        ];
+        
+        return res.status(200).json({
+            predictions: mockTides,
+            fallback: true,
+            message: 'Using fallback data - external API unavailable'
         });
     }
   }

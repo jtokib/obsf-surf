@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "echarts": "^5.6.0",
+    "echarts-for-react": "^3.0.2",
     "framer-motion": "^10.18.0",
     "next": "^15.4.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "eslint": "^8.57.1",
@@ -25,6 +27,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "module"
+  "license": "ISC"
 }
