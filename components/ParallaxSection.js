@@ -20,22 +20,20 @@ export default function ParallaxSection({ imageUrl, alt, overlay = true }) {
     }, []);
 
     return (
-        <div className="parallax-container">
-            <motion.div
-                ref={parallaxRef}
-                className="parallax-image"
-                initial={{ scale: 1.1 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
-            >
-                <Image
-                    src={imageUrl}
-                    alt={alt}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    priority
-                />
-            </motion.div>
+        <motion.div
+            ref={parallaxRef}
+            className="parallax-container parallax-image"
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+        >
+            <Image
+                src={imageUrl}
+                alt={alt}
+                fill
+                style={{ objectFit: 'cover' }}
+                priority
+            />
             {overlay && (
                 <motion.div
                     className="parallax-overlay"
@@ -44,6 +42,6 @@ export default function ParallaxSection({ imageUrl, alt, overlay = true }) {
                     transition={{ duration: 1 }}
                 />
             )}
-        </div>
+        </motion.div>
     );
 }

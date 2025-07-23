@@ -1,6 +1,176 @@
+import React, { useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 
-export default function TideTable({ tideData }) {
+// Dynamically import ReactECharts to avoid SSR issues and improve performance
+const ReactECharts = dynamic(() => import('echarts-for-react'), { 
+    ssr: false,
+    loading: () => <div className="chart-loading">📊 Loading Epic Tide Matrix...</div>
+});
+
+const TideTable = memo(function TideTable({ tideData }) {
+    const getTideIcon = (type) => {
+        return type === 'H' ? '⬆️' : '⬇️';
+    };
+
+    const getTideLabel = (type) => {
+        return type === 'H' ? 'High Tide' : 'Low Tide';
+    };
+
+    const getTideColor = (type) => {
+        return type === 'H' ? '#00bcd4' : '#ff7043';
+    };
+
+    // Create tide graph data for eCharts - optimized for performance
+    const tideGraphData = useMemo(() => {
+        if (!tideData?.predictions) return null;
+        
+        const predictions = tideData.predictions.slice(0, 8); // Show 8 data points
+        
+        return predictions.map((prediction) => {
+            const time = prediction.t.split(' ')[1]; // Extract time part
+            
+            return {
+                ...prediction,
+                time,
+                value: parseFloat(prediction.v), // Pre-parse for performance
+            };
+        });
+    }, [tideData]);
+
+    // Memoize chart options for performance
+    const chartOptions = useMemo(() => ({
+        backgroundColor: 'transparent',
+        animation: true,
+        animationDuration: 1000,
+        animationEasing: 'cubicOut',
+        grid: {
+            left: '10%',
+            right: '10%',
+            top: '15%',
+            bottom: '20%',
+            backgroundColor: 'rgba(0, 20, 40, 0.3)',
+            borderColor: '#00ffff',
+            borderWidth: 1,
+        },
+        xAxis: {
+            type: 'category',
+            data: tideGraphData?.map(point => point.time) || [],
+            axisLine: {
+                lineStyle: {
+                    color: '#00ffff',
+                    width: 2,
+                }
+            },
+            axisLabel: {
+                color: '#00ffff',
+                fontSize: 10,
+                fontFamily: 'Orbitron, monospace',
+                fontWeight: 'bold',
+            },
+            splitLine: {
+                show: true,
+                lineStyle: {
+                    color: 'rgba(0, 255, 255, 0.1)',
+                    type: 'dashed',
+                }
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: 'Height (ft)',
+            nameTextStyle: {
+                color: '#00ffff',
+                fontSize: 12,
+                fontFamily: 'Orbitron, monospace',
+            },
+            axisLine: {
+                lineStyle: {
+                    color: '#00ffff',
+                    width: 2,
+                }
+            },
+            axisLabel: {
+                color: '#00ffff',
+                fontSize: 10,
+                fontFamily: 'Orbitron, monospace',
+                fontWeight: 'bold',
+            },
+            splitLine: {
+                lineStyle: {
+                    color: 'rgba(0, 255, 255, 0.1)',
+                    type: 'dashed',
+                }
+            }
+        },
+        series: [{
+            type: 'line',
+            data: tideGraphData?.map(point => point.value) || [],
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8,
+            itemStyle: {
+                color: (params) => {
+                    const point = tideGraphData?.[params.dataIndex];
+                    return point?.type === 'H' ? '#00bcd4' : '#ff7043';
+                },
+                borderColor: '#ffffff',
+                borderWidth: 2,
+            },
+            lineStyle: {
+                color: '#00ffff',
+                width: 3,
+                shadowColor: '#00ffff',
+                shadowBlur: 10,
+            },
+            areaStyle: {
+                color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [{
+                        offset: 0,
+                        color: 'rgba(0, 188, 212, 0.4)'
+                    }, {
+                        offset: 1,
+                        color: 'rgba(0, 188, 212, 0.05)'
+                    }]
+                }
+            },
+            emphasis: {
+                focus: 'series',
+                itemStyle: {
+                    shadowBlur: 20,
+                    shadowColor: '#00ffff'
+                }
+            }
+        }],
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(0, 20, 40, 0.9)',
+            borderColor: '#00ffff',
+            borderWidth: 1,
+            textStyle: {
+                color: '#00ffff',
+                fontFamily: 'Orbitron, monospace',
+            },
+            formatter: (params) => {
+                const point = tideGraphData?.[params[0]?.dataIndex];
+                if (!point) return '';
+                return `
+                    <div style="font-family: Orbitron, monospace; font-weight: bold;">
+                        🌊 ${point.type === 'H' ? 'HIGH TIDE' : 'LOW TIDE'}<br/>
+                        ⏰ Time: ${point.time}<br/>
+                        📏 Height: ${point.v} ft<br/>
+                        ${point.type === 'H' ? '⬆️' : '⬇️'} ${getTideLabel(point.type)}
+                    </div>
+                `;
+            }
+        }
+    }), [tideGraphData]);
+
     if (!tideData || !tideData.predictions) {
         return (
             <div className="tide-error">
@@ -10,14 +180,6 @@ export default function TideTable({ tideData }) {
             </div>
         );
     }
-
-    const getTideIcon = (type) => {
-        return type === 'H' ? '🌊' : '🏖️';
-    };
-
-    const getTideLabel = (type) => {
-        return type === 'H' ? 'High' : 'Low';
-    };
 
     const rowVariants = {
         hidden: { opacity: 0, x: -20 },
@@ -34,53 +196,83 @@ export default function TideTable({ tideData }) {
     };
 
     return (
-        <div className="tide-table">
-            <motion.table
+        <div className="tide-section">
+            {/* eCharts Tide Graph */}
+            <motion.div 
+                className="tide-graph-container"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.6 }}
             >
-                <thead>
-                    <tr>
-                        <th>📅 Time</th>
-                        <th>📏 Height</th>
-                        <th>🌊 Type</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {tideData.predictions.map((prediction, index) => (
-                        <motion.tr
-                            key={index}
-                            custom={index}
-                            variants={rowVariants}
-                            initial="hidden"
-                            animate="visible"
-                            whileHover={{
-                                backgroundColor: 'rgba(0, 255, 255, 0.1)',
-                                scale: 1.02
-                            }}
-                        >
-                            <td>
-                                <div className="time-cell">
-                                    <span className="time-text">{prediction.t.slice(5)}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div className="height-cell">
-                                    <span className="height-value">{prediction.v}</span>
-                                    <span className="height-unit">ft</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div className="type-cell">
-                                    <span className="tide-icon">{getTideIcon(prediction.type)}</span>
-                                    <span className="tide-label">{getTideLabel(prediction.type)}</span>
-                                </div>
-                            </td>
-                        </motion.tr>
-                    ))}
-                </tbody>
-            </motion.table>
+                <h3 className="tide-graph-title">🌊⚡ CYBERPUNK TIDE MATRIX ⚡🌊</h3>
+                <div className="tide-graph">
+                    <ReactECharts
+                        option={chartOptions}
+                        style={{ height: '450px', width: '100%' }}
+                        theme="dark"
+                        lazyUpdate={true}
+                        notMerge={false}
+                        opts={{ renderer: 'canvas' }}
+                    />
+                </div>
+            </motion.div>
+
+            {/* Tide Table */}
+            <motion.div 
+                className="tide-table-container"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+            >
+                <h3 className="tide-table-title">🌊 High & Low Tides</h3>
+                <div className="tide-table">
+                    <div className="tide-table-header">
+                        <div className="header-cell">Time</div>
+                        <div className="header-cell">Height</div>
+                        <div className="header-cell">Tide</div>
+                    </div>
+                    <div className="tide-table-body">
+                        {tideData.predictions.slice(0, 6).map((prediction, index) => {
+                            const isHigh = prediction.type === 'H';
+                            const time = prediction.t.split(' ')[1]; // Extract time
+                            const date = prediction.t.split(' ')[0]; // Extract date
+                            
+                            return (
+                                <motion.div
+                                    key={index}
+                                    className={`tide-row ${isHigh ? 'high-tide' : 'low-tide'}`}
+                                    custom={index}
+                                    variants={rowVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    whileHover={{
+                                        scale: 1.02,
+                                        backgroundColor: isHigh ? 'rgba(0, 188, 212, 0.1)' : 'rgba(255, 112, 67, 0.1)'
+                                    }}
+                                >
+                                    <div className="tide-cell time-cell">
+                                        <div className="time-main">{time}</div>
+                                        <div className="time-date">{date.slice(5)}</div>
+                                    </div>
+                                    <div className="tide-cell height-cell">
+                                        <div className="height-value" style={{color: getTideColor(prediction.type)}}>
+                                            {prediction.v}
+                                        </div>
+                                        <div className="height-unit">feet</div>
+                                    </div>
+                                    <div className="tide-cell type-cell">
+                                        <div className="tide-type" style={{color: getTideColor(prediction.type)}}>
+                                            {getTideIcon(prediction.type)} {getTideLabel(prediction.type)}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </motion.div>
         </div>
     );
-}
+});
+
+export default TideTable;
