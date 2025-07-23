@@ -1,21 +1,4 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "next.config.js",
-        "use": "@vercel/next"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/robots.txt",
-        "dest": "/api/robots"
-      },
-      {
-        "src": "/sitemap.xml",
-        "dest": "/api/sitemap"
-      }
-    ],
     "headers": [
       {
         "source": "/api/(.*)",
@@ -25,7 +8,7 @@
             "value": "*"
           },
           {
-            "key": "Access-Control-Allow-Methods",
+            "key": "Access-Control-Allow-Methods", 
             "value": "GET, POST, OPTIONS"
           },
           {
