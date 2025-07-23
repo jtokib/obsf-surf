@@ -45,7 +45,7 @@ export default async function handler(req, res) {
             timestamp: latestWind.t,
         };
 
-        res.setHeader('Cache-Control', 's-maxage=300'); // Cache for 5 minutes
+        res.setHeader('Cache-Control', 's-maxage=1800'); // Cache for 30 minutes
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET');
 

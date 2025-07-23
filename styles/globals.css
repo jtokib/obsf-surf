@@ -1,4 +1,8 @@
 /* styles/globals.css - Complete Retro Arcade Surf Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -286,67 +290,6 @@ a {
     100% {
         opacity: 0;
     }
-}
-
-/* Parallax */
-.parallax-container {
-    height: 40vh;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-top: 2px solid var(--accent-color);
-    border-bottom: 2px solid var(--accent-color);
-    box-shadow:
-        0 0 30px rgba(0, 255, 255, 0.3),
-        inset 0 0 50px rgba(0, 0, 0, 0.5);
-}
-
-.light-mode .parallax-container {
-    box-shadow:
-        0 0 30px rgba(0, 102, 102, 0.2),
-        inset 0 0 50px rgba(255, 255, 255, 0.3);
-}
-
-.parallax-image {
-    position: absolute;
-    top: -20%;
-    left: 0;
-    width: 100%;
-    height: 120%;
-    will-change: transform;
-    filter:
-        contrast(1.2) saturate(1.3) hue-rotate(10deg) brightness(0.8);
-    transition: filter 0.3s ease;
-}
-
-.light-mode .parallax-image {
-    filter:
-        contrast(1.1) saturate(1.1) hue-rotate(-5deg) brightness(1.1);
-}
-
-.parallax-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg,
-            rgba(0, 255, 255, 0.1) 0%,
-            transparent 25%,
-            transparent 75%,
-            rgba(0, 255, 136, 0.1) 100%);
-    z-index: 1;
-}
-
-.light-mode .parallax-container::before {
-    background: linear-gradient(45deg,
-            rgba(0, 102, 102, 0.1) 0%,
-            transparent 25%,
-            transparent 75%,
-            rgba(0, 77, 51, 0.1) 100%);
 }
 
 /* Main Content */
@@ -1187,7 +1130,7 @@ a {
     letter-spacing: 0.5px;
 }
 
-/* CYBERPUNK TIDE MATRIX - Enhanced Visualization */
+/* Tide Chart - Enhanced Visualization */
 .tide-section {
     display: flex;
     flex-direction: column;
@@ -1461,7 +1404,7 @@ a {
     }
     
     .tide-graph {
-        height: 250px; /* Increased for better mobile viewing */
+        height: 500px; /* Increased for better mobile viewing */
     }
     
     .tide-graph-title {
@@ -1534,7 +1477,7 @@ a {
     }
     
     .tide-graph {
-        height: 220px;
+        height: 500px;
     }
     
     .tide-section::before {
@@ -1710,9 +1653,6 @@ a:hover {
         border-radius: 15px;
     }
 
-    .parallax-container {
-        height: 35vh;
-    }
 
     .tabs {
         flex-direction: column;
@@ -1800,9 +1740,6 @@ a:hover {
         font-size: 0.9rem;
     }
 
-    .parallax-container {
-        height: 30vh;
-    }
 
     .main-content {
         margin-top: -3rem;

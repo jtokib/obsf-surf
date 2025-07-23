@@ -204,7 +204,7 @@ const TideTable = memo(function TideTable({ tideData }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
             >
-                <h3 className="tide-graph-title">🌊⚡ CYBERPUNK TIDE MATRIX ⚡🌊</h3>
+                <h3 className="tide-graph-title">🌊 Tide Chart 🌊</h3>
                 <div className="tide-graph">
                     <ReactECharts
                         option={chartOptions}

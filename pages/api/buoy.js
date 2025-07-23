@@ -4,10 +4,13 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Use CDIP THREDDS OPeNDAP endpoint for Station 142 real-time data
-        // This is the actual CDIP endpoint for SF Bar buoy (Station 142p1)
+        // Get current datetime in ISO format for the API request
+        const currentTime = new Date().toISOString();
+        
+        // Use CDIP THREDDS NetCDF subset service endpoint for Station 142 real-time data
+        // This endpoint returns XML format with current data
         const response = await fetch(
-            'https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/realtime/142p1_rt.nc.ascii?waveTime[0:1:0],waveHs[0:1:0],waveTp[0:1:0],waveDp[0:1:0]',
+            `https://thredds.cdip.ucsd.edu/thredds/ncss/point/cdip/realtime/142p1_rt.nc?var=waveDp&var=waveHs&var=waveTp&latitude=&longitude=&time=${currentTime}&accept=xml`,
             {
                 headers: {
                     'User-Agent': 'jtokib.com/2.0',
@@ -19,24 +22,18 @@ export default async function handler(req, res) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.text();
+        const xmlData = await response.text();
         
-        // Parse CDIP ASCII format response
-        const lines = data.split('\n').filter(line => line.trim() && !line.startsWith('Dataset'));
-        const dataLines = lines.filter(line => !line.includes('[') && !line.includes('waveTime'));
+        // Parse XML response - look for the latest point data using the correct XML structure
+        const waveHsMatch = xmlData.match(/<data name="waveHs"[^>]*>([^<]+)<\/data>/);
+        const waveTpMatch = xmlData.match(/<data name="waveTp"[^>]*>([^<]+)<\/data>/);
+        const waveDpMatch = xmlData.match(/<data name="waveDp"[^>]*>([^<]+)<\/data>/);
         
-        if (dataLines.length === 0) {
-            throw new Error('No wave data available');
-        }
-
-        // Parse the latest data (last line with actual numbers)
-        const latestData = dataLines[dataLines.length - 1].trim().split(/\s+/);
-        
-        if (latestData.length >= 4) {
+        if (waveHsMatch && waveTpMatch && waveDpMatch) {
             const formattedData = {
-                Hs: parseFloat(latestData[1]) || null, // Wave height in meters, convert to feet
-                Tp: parseFloat(latestData[2]) || null, // Peak period in seconds
-                Dp: parseFloat(latestData[3]) || null, // Direction in degrees
+                Hs: parseFloat(waveHsMatch[1]) || null, // Wave height in meters, convert to feet
+                Tp: parseFloat(waveTpMatch[1]) || null, // Peak period in seconds
+                Dp: parseFloat(waveDpMatch[1]) || null, // Direction in degrees
                 timestamp: new Date().toISOString(),
             };
 
@@ -45,13 +42,13 @@ export default async function handler(req, res) {
                 formattedData.Hs = (formattedData.Hs * 3.28084).toFixed(2);
             }
 
-            res.setHeader('Cache-Control', 's-maxage=300'); // Cache for 5 minutes
+            res.setHeader('Cache-Control', 's-maxage=1800'); // Cache for 30 minutes
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Methods', 'GET');
 
             return res.status(200).json(formattedData);
         } else {
-            throw new Error('Invalid data format from CDIP');
+            throw new Error('Invalid XML data format from CDIP');
         }
     } catch (error) {
         console.error('Buoy API error:', error);

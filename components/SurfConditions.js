@@ -71,6 +71,7 @@ export default function SurfConditions() {
         }
     };
 
+
     const getWaveQuality = (height) => {
         if (!height) return { emoji: '❓', status: 'Unknown' };
         const ft = height * 3.281;
