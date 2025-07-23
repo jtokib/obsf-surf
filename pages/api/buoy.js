@@ -9,8 +9,14 @@ export default async function handler(req, res) {
         
         // Use CDIP THREDDS NetCDF subset service endpoint for Station 142 real-time data
         // This endpoint returns XML format with current data
+        const apiUrl = `https://thredds.cdip.ucsd.edu/thredds/ncss/point/cdip/realtime/142p1_rt.nc?var=waveDp&var=waveHs&var=waveTp&latitude=&longitude=&time=${currentTime}&accept=xml`;
+        console.log('=== CDIP API Request ===');
+        console.log('API URL:', apiUrl);
+        console.log('Timestamp:', currentTime);
+        console.log('=== End API Request ===');
+        
         const response = await fetch(
-            `https://thredds.cdip.ucsd.edu/thredds/ncss/point/cdip/realtime/142p1_rt.nc?var=waveDp&var=waveHs&var=waveTp&latitude=&longitude=&time=${currentTime}&accept=xml`,
+            apiUrl,
             {
                 headers: {
                     'User-Agent': 'jtokib.com/2.0',
