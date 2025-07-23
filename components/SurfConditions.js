@@ -356,7 +356,7 @@ export default function SurfConditions() {
 
                         {activeTab === 'tides' && (
                             <div className="tab-panel">
-                                <h3>🌙 Today's Tide Schedule</h3>
+                                <h3>🌙 Today&apos;s Tide Schedule</h3>
                                 <p>High and low tide predictions for Ocean Beach</p>
                                 <TideTable tideData={tideData} />
                             </div>
