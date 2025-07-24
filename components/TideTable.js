@@ -34,9 +34,42 @@ const TideTable = memo(function TideTable({ tideData }) {
                 ...prediction,
                 time,
                 value: parseFloat(prediction.v), // Pre-parse for performance
+                fullDateTime: new Date(prediction.t.replace(' ', 'T')), // For current time comparison
             };
         });
     }, [tideData]);
+
+    // Find current time position for vertical line
+    const currentTimeData = useMemo(() => {
+        if (!tideGraphData) return null;
+        
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTimeDecimal = currentHour + currentMinute / 60;
+        
+        // Find the position between tide points where current time falls
+        let currentTimeIndex = -1;
+        for (let i = 0; i < tideGraphData.length - 1; i++) {
+            const currentPoint = tideGraphData[i];
+            const nextPoint = tideGraphData[i + 1];
+            
+            const currentPointTime = currentPoint.fullDateTime.getHours() + currentPoint.fullDateTime.getMinutes() / 60;
+            const nextPointTime = nextPoint.fullDateTime.getHours() + nextPoint.fullDateTime.getMinutes() / 60;
+            
+            if (currentTimeDecimal >= currentPointTime && currentTimeDecimal <= nextPointTime) {
+                // Interpolate position between the two points
+                const ratio = (currentTimeDecimal - currentPointTime) / (nextPointTime - currentPointTime);
+                currentTimeIndex = i + ratio;
+                break;
+            }
+        }
+        
+        return {
+            index: currentTimeIndex,
+            time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        };
+    }, [tideGraphData]);
 
     // Memoize chart options for performance
     const chartOptions = useMemo(() => ({
@@ -145,7 +178,37 @@ const TideTable = memo(function TideTable({ tideData }) {
                     shadowBlur: 20,
                     shadowColor: '#00ffff'
                 }
-            }
+            },
+            markLine: currentTimeData?.index >= 0 ? {
+                symbol: 'none',
+                data: [{
+                    name: 'Current Time',
+                    xAxis: currentTimeData.index,
+                    lineStyle: {
+                        type: 'dashed',
+                        color: '#ffff00',
+                        width: 2,
+                        shadowColor: '#ffff00',
+                        shadowBlur: 5,
+                    },
+                    label: {
+                        show: true,
+                        position: 'insideEndTop',
+                        formatter: `NOW\n${currentTimeData.time}`,
+                        color: '#ffff00',
+                        fontFamily: 'Orbitron, monospace',
+                        fontSize: 10,
+                        fontWeight: 'bold',
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: [4, 8],
+                        borderRadius: 4,
+                        borderColor: '#ffff00',
+                        borderWidth: 1,
+                    }
+                }],
+                animation: true,
+                animationDuration: 1000,
+            } : undefined
         }],
         tooltip: {
             trigger: 'axis',
@@ -169,7 +232,7 @@ const TideTable = memo(function TideTable({ tideData }) {
                 `;
             }
         }
-    }), [tideGraphData]);
+    }), [tideGraphData, currentTimeData]);
 
     if (!tideData || !tideData.predictions) {
         return (

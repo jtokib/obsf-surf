@@ -1,7 +1,16 @@
 const nextConfig = {
     reactStrictMode: true,
     images: {
-        domains: ['cdip.ucsd.edu'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'cdip.ucsd.edu',
+            },
+            {
+                protocol: 'http',
+                hostname: 'cdip.ucsd.edu',
+            },
+        ],
         dangerouslyAllowSVG: true,
         contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     },

@@ -4,15 +4,13 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Get current datetime in ISO format for the API request
-        const currentTime = new Date().toISOString();
+        // Access CDIP station 142 spectral parameters (sp) data using justdar API
+        // This should return recent wave height, period, and direction data
+        const apiUrl = `https://cdip.ucsd.edu/data_access/justdar.cdip?142+sp`;
         
-        // Use CDIP THREDDS NetCDF subset service endpoint for Station 142 real-time data
-        // This endpoint returns XML format with current data
-        const apiUrl = `https://thredds.cdip.ucsd.edu/thredds/ncss/point/cdip/realtime/142p1_rt.nc?var=waveDp&var=waveHs&var=waveTp&latitude=&longitude=&time=${currentTime}&accept=xml`;
         console.log('=== CDIP API Request ===');
         console.log('API URL:', apiUrl);
-        console.log('Timestamp:', currentTime);
+        console.log('Attempting direct station access');
         console.log('=== End API Request ===');
         
         const response = await fetch(
@@ -28,34 +26,28 @@ export default async function handler(req, res) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const xmlData = await response.text();
+        const textData = await response.text();
         
-        // Log the raw XML response for troubleshooting
-        console.log('=== CDIP XML Response ===');
-        console.log('Response length:', xmlData.length);
-        console.log('First 500 characters:', xmlData.substring(0, 500));
-        console.log('Last 500 characters:', xmlData.substring(Math.max(0, xmlData.length - 500)));
-        console.log('Contains waveHs?', xmlData.includes('waveHs'));
-        console.log('Contains data tag?', xmlData.includes('<data'));
-        console.log('=== End XML Response ===');
+        // Log the raw text response for troubleshooting
+        console.log('=== CDIP Text Response ===');
+        console.log('Response length:', textData.length);
+        console.log('First 500 characters:', textData.substring(0, 500));
+        console.log('=== End Text Response ===');
         
-        // Parse XML response - look for the latest point data using the correct XML structure
-        const waveHsMatch = xmlData.match(/<data name="waveHs"[^>]*>([^<]+)<\/data>/);
-        const waveTpMatch = xmlData.match(/<data name="waveTp"[^>]*>([^<]+)<\/data>/);
-        const waveDpMatch = xmlData.match(/<data name="waveDp"[^>]*>([^<]+)<\/data>/);
+        // Parse text response - look for the wave parameters line
+        // Format: Hs(m):  0.82   Tp(s): 15.38   Dp(deg): 222   Ta(s):  8.48
+        const waveParamsMatch = textData.match(/Hs\(m\):\s*([\d.]+)\s+Tp\(s\):\s*([\d.]+)\s+Dp\(deg\):\s*(\d+)/);
         
         // Log parsing results
-        console.log('=== XML Parsing Results ===');
-        console.log('waveHs match:', waveHsMatch);
-        console.log('waveTp match:', waveTpMatch);
-        console.log('waveDp match:', waveDpMatch);
+        console.log('=== Text Parsing Results ===');
+        console.log('Wave params match:', waveParamsMatch);
         console.log('=== End Parsing Results ===');
         
-        if (waveHsMatch && waveTpMatch && waveDpMatch) {
+        if (waveParamsMatch) {
             const formattedData = {
-                Hs: parseFloat(waveHsMatch[1]) || null, // Wave height in meters, convert to feet
-                Tp: parseFloat(waveTpMatch[1]) || null, // Peak period in seconds
-                Dp: parseFloat(waveDpMatch[1]) || null, // Direction in degrees
+                Hs: parseFloat(waveParamsMatch[1]) || null, // Wave height in meters
+                Tp: parseFloat(waveParamsMatch[2]) || null, // Peak period in seconds
+                Dp: parseInt(waveParamsMatch[3]) || null, // Direction in degrees
                 timestamp: new Date().toISOString(),
             };
 
@@ -70,23 +62,15 @@ export default async function handler(req, res) {
 
             return res.status(200).json(formattedData);
         } else {
-            throw new Error('Invalid XML data format from CDIP');
+            throw new Error('Invalid text data format from CDIP - could not parse wave parameters');
         }
     } catch (error) {
         console.error('Buoy API error:', error);
         
-        // Realistic fallback data based on typical SF Bar conditions
-        const baseHeight = 3 + Math.random() * 4; // 3-7 ft waves
-        const basePeriod = 12 + Math.random() * 8; // 12-20 second periods
-        const baseDirection = 250 + Math.random() * 60; // 250-310 degrees (W-NW)
-        
-        return res.status(200).json({
-            Hs: baseHeight.toFixed(2), // Wave height in feet
-            Tp: basePeriod.toFixed(1), // Wave period in seconds  
-            Dp: Math.round(baseDirection), // Wave direction in degrees
-            timestamp: new Date().toISOString(),
-            fallback: true,
-            message: 'Using realistic fallback data - external API unavailable'
+        return res.status(503).json({
+            error: 'Buoy data unavailable',
+            message: 'Unable to retrieve current buoy data from CDIP',
+            timestamp: new Date().toISOString()
         });
     }
   }

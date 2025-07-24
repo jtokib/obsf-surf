@@ -9,7 +9,7 @@ export default function HeroSection() {
             className="hero-section"
         >
             <h1 className="hero-title">
-                Ocean Beach SF Surf Conditions
+                OBSF Surf Conditions
             </h1>
         </motion.div>
     );

@@ -4,12 +4,14 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Get current date in YYYYMMDD format
-        const today = new Date();
-        const beginDate = today.toISOString().split('T')[0].replace(/-/g, '');
+        // Get yesterday's date for begin_date (previous 24 hours)
+        const now = new Date();
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const beginDate = yesterday.toISOString().split('T')[0].replace(/-/g, '');
         
-        // Get tomorrow's date for end_date
-        const tomorrow = new Date(today);
+        // Get tomorrow's date for end_date (future 24 hours)
+        const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
         const endDate = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
         

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TideTable from './TideTable';
+import SurfAISummary from './SurfAISummary';
 import Image from 'next/image';
 
 export default function SurfConditions() {
@@ -23,9 +24,16 @@ export default function SurfConditions() {
         try {
             const response = await fetch('/api/buoy');
             const data = await response.json();
-            setBuoyData(data);
+            
+            // Check if the response indicates an error (503 or error field)
+            if (!response.ok || data.error) {
+                setBuoyData(null);
+            } else {
+                setBuoyData(data);
+            }
         } catch (error) {
             console.error('Error fetching buoy data:', error);
+            setBuoyData(null);
         } finally {
             setLoading(false);
         }
@@ -132,6 +140,13 @@ export default function SurfConditions() {
                 <p>Ocean Beach • San Francisco • Real-time data</p>
             </motion.div>
 
+            <SurfAISummary 
+                buoyData={buoyData} 
+                windData={windData} 
+                tideData={tideData}
+                loading={loading || windLoading} 
+            />
+
             <motion.div className="conditions-summary" variants={itemVariants}>
                 <motion.div className="condition-item" whileHover={{ scale: 1.05 }}>
                     <h3>🌊 SF Buoy</h3>
@@ -157,9 +172,10 @@ export default function SurfConditions() {
                             </div>
                         </>
                     ) : (
-                        <div className="error-state">
-                            <h3>⚠️ Buoy Offline</h3>
-                            <p>Data temporarily unavailable</p>
+                        <div className="wave-data">
+                            <div className="wave-height">N/A</div>
+                            <div className="wave-details">N/A • N/A</div>
+                            <div className="wave-quality">⚠️ Data Unavailable</div>
                         </div>
                     )}
                 </motion.div>
