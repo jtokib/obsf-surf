@@ -110,7 +110,7 @@ function analyzeWind(direction, speed) {
             score: 5,
             isOffshore: false
         };
-    } else if (speed <= 7) {
+    } else if (speed <= 5) {
         return {
             quality: 'good',
             description: 'light wind',
@@ -216,11 +216,13 @@ function analyzeTide(tideData) {
     if (isDropping) {
         score = 4.5;
         quality = 'excellent';
-        description = 'dropping (prime time!)';
+        const dropPhrases = ['dropping (dialed!)', 'dropping (money time!)', 'dropping (green light!)', 'dropping (go time!)', 'dropping (optimal!)'];
+        description = dropPhrases[Math.floor(Math.random() * dropPhrases.length)];
     } else if (currentTideDirection === 'rising') {
         score = 2;
         quality = 'fair';
-        description = 'rising (wait for the turn)';
+        const risingPhrases = ['rising (patience pays)', 'rising (almost there)', 'rising (hold tight)', 'rising (wait for it)', 'rising (building up)'];
+        description = risingPhrases[Math.floor(Math.random() * risingPhrases.length)];
     } else {
         score = 2.5;
         quality = 'unknown';
@@ -375,7 +377,14 @@ function getTideRecommendation(tideAnalysis, windAnalysis, swellAnalysis) {
     }
     
     if (tideAnalysis.isDropping) {
-        return 'Perfect timing - dropping tide is prime time!';
+        const perfectTimingPhrases = [
+            'Perfect timing - conditions are dialed!',
+            'Stellar timing - everything aligned!',
+            'Money timing - window is open!',
+            'Prime conditions - go time!',
+            'Perfect window - conditions are firing!'
+        ];
+        return perfectTimingPhrases[Math.floor(Math.random() * perfectTimingPhrases.length)];
     }
     
     if (tideAnalysis.direction === 'rising' && tideAnalysis.nextHighTide && tideAnalysis.timeToNextHigh) {
