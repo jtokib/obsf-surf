@@ -16,11 +16,11 @@ export default async function handler(req, res) {
         const endDate = tomorrow.toISOString().split('T')[0].replace(/-/g, '');
         
         // Corrected NOAA API URL with proper parameters
-        const tidesUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=jtokib_surf_app&begin_date=${beginDate}&end_date=${endDate}&datum=MLLW&station=9414290&time_zone=lst_ldt&units=english&interval=hilo&format=json`;
+        const tidesUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=obsuf_surf_app&begin_date=${beginDate}&end_date=${endDate}&datum=MLLW&station=9414290&time_zone=lst_ldt&units=english&interval=hilo&format=json`;
 
         const response = await fetch(tidesUrl, {
             headers: {
-                'User-Agent': 'jtokib.com/2.0',
+                'User-Agent': 'obsuf.surf/2.0',
             },
         });
 

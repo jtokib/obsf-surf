@@ -17,7 +17,7 @@ export default async function handler(req, res) {
             apiUrl,
             {
                 headers: {
-                    'User-Agent': 'jtokib.com/2.0',
+                    'User-Agent': 'obsuf.surf/2.0',
                 },
             }
         );

@@ -5,8 +5,8 @@ export default function Document() {
     return (
         <Html lang="en">
             <Head>
-                <meta name="description" content="jTokiB Dot Com." />
-                <meta name="author" content="Toki Burke" />
+                <meta name="description" content="Ocean Beach SF Surf Conditions - Real-time surf reports, buoy data, tides, and wind conditions for San Francisco's Ocean Beach." />
+                <meta name="author" content="Ocean Beach SF Surf Conditions" />
 
                 {/* Favicon and app icons */}
                 <link rel="apple-touch-icon" sizes="57x57" href="/images/favicon/apple-icon-57x57.png" />
@@ -34,16 +34,16 @@ export default function Document() {
                         __html: JSON.stringify({
                             "@context": "https://schema.org/",
                             "@type": "WebSite",
-                            "name": "Things Toki Burke Is Not",
-                            "url": "https://jtokib.com",
+                            "name": "Ocean Beach SF Surf Conditions",
+                            "url": "https://obsuf.surf",
                             "about": {
-                                "@type": "Person",
-                                "name": "Toki Burke",
-                                "sameAs": [
-                                    "https://github.com/jtokib",
-                                    "https://jtokib.github.io/jtokib.com/",
-                                    "https://www.linkedin.com/in/toki-burke"
-                                ]
+                                "@type": "Place",
+                                "name": "Ocean Beach, San Francisco",
+                                "geo": {
+                                    "@type": "GeoCoordinates",
+                                    "latitude": 37.7694,
+                                    "longitude": -122.5107
+                                }
                             }
                         })
                     }}
@@ -55,12 +55,12 @@ export default function Document() {
                     strategy="afterInteractive"
                     dangerouslySetInnerHTML={{
                         __html: `
-                            window.jtokib = window.jtokib || [];
+                            window.dataLayer = window.dataLayer || [];
                             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
                             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
                             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                            })(window,document,'script','jtokib','GTM-TM7DV4L');
+                            })(window,document,'script','dataLayer','GTM-TM7DV4L');
                         `,
                     }}
                 />

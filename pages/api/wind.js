@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
         const response = await fetch(windUrl, {
             headers: {
-                'User-Agent': 'jtokib.com/2.0',
+                'User-Agent': 'obsuf.surf/2.0',
             },
         });
 

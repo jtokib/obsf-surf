@@ -1,5 +1,5 @@
 {
-  "name": "jtokib-nextjs",
+  "name": "obsuf-surf",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -26,7 +26,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11"
   },
-  "description": "This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).",
+  "description": "Ocean Beach SF Surf Conditions - Real-time surf reports, buoy data, tides, and wind conditions for San Francisco's Ocean Beach.",
   "main": "index.js",
   "directories": {
     "lib": "lib"

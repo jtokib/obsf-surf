@@ -3,9 +3,7 @@ import { motion } from 'framer-motion';
 
 export default function Layout({ children }) {
     const [darkMode, setDarkMode] = useState(true);
-    const [loveMessage, setLoveMessage] = useState('');
     const [scanlineEffect, setScanlineEffect] = useState(false);
-    const [keySequence, setKeySequence] = useState([]);
 
     useEffect(() => {
         // Check localStorage for dark mode preference
@@ -20,42 +18,9 @@ export default function Layout({ children }) {
             setTimeout(() => setScanlineEffect(false), 3000);
         }, 15000);
 
-        // Keyboard listener for secret sequence "kim"
-        const handleKeyPress = (event) => {
-            const key = event.key.toLowerCase();
-
-            setKeySequence(prev => {
-                const newSequence = [...prev, key].slice(-3); // Keep only last 3 keys
-
-                // Check if sequence spells "kim"
-                if (newSequence.join('') === 'kim') {
-                    // Trigger love message
-                    setLoveMessage('I LOVE YOU KIM!');
-
-                    // Add screen flash effect
-                    document.body.style.animation = 'flash 0.1s ease-in-out 3';
-                    setTimeout(() => {
-                        document.body.style.animation = '';
-                    }, 300);
-
-                    // Auto-hide after 4 seconds
-                    setTimeout(() => {
-                        setLoveMessage('');
-                    }, 4000);
-
-                    // Reset sequence
-                    return [];
-                }
-
-                return newSequence;
-            });
-        };
-
-        document.addEventListener('keydown', handleKeyPress);
 
         return () => {
             clearInterval(scanlineInterval);
-            document.removeEventListener('keydown', handleKeyPress);
         };
     }, []);
 
@@ -79,26 +44,11 @@ export default function Layout({ children }) {
         <div className={`layout ${darkMode ? 'dark-mode' : 'light-mode'} ${scanlineEffect ? 'scanline-effect' : ''}`}>
             {children}
 
-            {loveMessage && (
-                <motion.div
-                    className="love-message"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    exit={{ scale: 0, rotate: 180 }}
-                    transition={{
-                        type: "spring",
-                        stiffness: 260,
-                        damping: 20
-                    }}
-                >
-                    <h2>{loveMessage}</h2>
-                </motion.div>
-            )}
 
             <footer className="footer">
                 <div className="container">
                     <p className="footer-text">
-                        Things Toki Burke Is Not |
+                        Ocean Beach SF Surf Conditions |
                         &copy;{new Date().getFullYear()}&nbsp;|&nbsp;
                         <span onClick={toggleDarkMode} className="clickable">
                             {darkMode ? '🌅 Light Mode' : '🌙 Dark Mode'}

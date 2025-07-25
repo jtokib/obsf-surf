@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Overview
+
+This is obsuf.surf - a specialized surf conditions website for Ocean Beach, San Francisco. The site provides real-time surf data, buoy readings, tide schedules, and wind conditions with a retro 80s synthwave aesthetic.
+
 ## Development Commands
 
 - **Development server**: `npm run dev` - Starts Next.js development server on http://localhost:3000

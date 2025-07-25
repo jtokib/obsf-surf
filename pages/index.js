@@ -7,11 +7,11 @@ export default function Home() {
     return (
         <Layout>
             <Head>
-                <title>jTokiB | Things Toki Burke Is Not</title>
-                <meta property="og:title" content="jTokiB | Things Toki Burke Is Not" />
-                <meta property="og:description" content="Retro surf site with real-time Ocean Beach conditions" />
-                <meta property="og:image" content="https://jtokib.com/og-image.jpg" />
-                <meta property="og:url" content="https://jtokib.com" />
+                <title>Ocean Beach SF Surf Conditions | Real-time Surf Reports</title>
+                <meta property="og:title" content="Ocean Beach SF Surf Conditions | Real-time Surf Reports" />
+                <meta property="og:description" content="Real-time surf conditions, buoy data, tides, and wind reports for Ocean Beach, San Francisco. Get the latest wave heights, periods, and surf forecasts." />
+                <meta property="og:image" content="https://obsuf.surf/og-image.jpg" />
+                <meta property="og:url" content="https://obsuf.surf" />
                 <meta name="twitter:card" content="summary_large_image" />
             </Head>
 
