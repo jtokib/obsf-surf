@@ -1,7 +1,73 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
+    const [predictionScore, setPredictionScore] = useState(null);
+    const [predictionLoading, setPredictionLoading] = useState(false);
+
+    // Get BQML prediction
+    const getPrediction = async (surfConditions) => {
+        try {
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(surfConditions),
+            });
+
+            if (!response.ok) {
+                console.error('Prediction API error:', response.status);
+                return null;
+            }
+
+            const data = await response.json();
+            return data.predicted_score;
+        } catch (error) {
+            console.error('Error getting prediction:', error);
+            return null;
+        }
+    };
+
+    // Fetch prediction when surf data changes
+    useEffect(() => {
+        if (buoyData && windData && tideData && !loading) {
+            setPredictionLoading(true);
+            
+            // Parse data for prediction API
+            const waveHeight = parseFloat(buoyData.Hs) || 0;
+            const windDirection = windData.direction || 0;
+            
+            // Determine tide phase
+            let tidePhase = 'UNKNOWN';
+            if (tideData?.predictions) {
+                const tideAnalysis = analyzeTide(tideData);
+                tidePhase = tideAnalysis.isDropping ? 'FALLING' : 
+                          tideAnalysis.direction === 'rising' ? 'RISING' : 'UNKNOWN';
+            }
+            
+            // Map wind direction to simple direction
+            const windDir = getSimpleWindDirection(windDirection);
+            
+            // Prepare surf conditions for prediction
+            const surfConditions = {
+                tide: tidePhase,
+                wind: windDir,
+                pt_reyes: waveHeight.toFixed(1), // Using SF Bar data as proxy for now
+                sf_bar: waveHeight.toFixed(1)
+            };
+
+            getPrediction(surfConditions)
+                .then(score => {
+                    setPredictionScore(score);
+                    setPredictionLoading(false);
+                })
+                .catch(() => {
+                    setPredictionLoading(false);
+                });
+        }
+    }, [buoyData, windData, tideData, loading]);
+
     const surfAnalysis = useMemo(() => {
         if (loading || !buoyData || !windData) {
             return {
@@ -29,14 +95,16 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
         const tideAnalysis = analyzeTide(tideData);
         
         // Combined surf quality assessment with tide weighting
-        const overallQuality = calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis);
+        const overallQuality = calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, predictionScore);
         
-        // Generate AI summary with tide considerations
+        // Generate AI summary with tide considerations and ML prediction
         const summary = generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuality, {
             waveHeight,
             wavePeriod,
             windSpeed,
-            windDirection
+            windDirection,
+            predictionScore,
+            predictionLoading
         });
 
         return {
@@ -44,13 +112,15 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
             quality: overallQuality.quality,
             emoji: overallQuality.emoji,
             confidence: overallQuality.confidence,
+            predictionScore,
             details: {
                 wind: windAnalysis,
                 swell: swellAnalysis,
-                tide: tideAnalysis
+                tide: tideAnalysis,
+                mlPrediction: predictionScore
             }
         };
-    }, [buoyData, windData, tideData, loading]);
+    }, [buoyData, windData, tideData, loading, predictionScore, predictionLoading]);
 
     return (
         <motion.div 
@@ -285,10 +355,18 @@ function analyzeSwell(height, period) {
     }
 }
 
-// Calculate overall surf quality with tide weighting
-function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis) {
-    // Weight the scores: swell and wind are primary, tide is secondary but important
-    const combinedScore = (windAnalysis.score * 0.4 + swellAnalysis.score * 0.4 + tideAnalysis.score * 0.2);
+// Calculate overall surf quality with tide weighting and ML prediction
+function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, predictionScore = null) {
+    // Base combined score: swell and wind are primary, tide is secondary but important
+    let combinedScore = (windAnalysis.score * 0.4 + swellAnalysis.score * 0.4 + tideAnalysis.score * 0.2);
+    
+    // If we have ML prediction, blend it in (prediction score is typically 0-10)
+    if (predictionScore !== null && predictionScore !== undefined) {
+        // Normalize prediction score to 0-5 scale to match other scores
+        const normalizedPrediction = Math.max(0, Math.min(5, predictionScore / 2));
+        // Blend prediction with combined score (30% prediction, 70% traditional analysis)
+        combinedScore = combinedScore * 0.7 + normalizedPrediction * 0.3;
+    }
     
     let quality, emoji, confidence;
     
@@ -297,72 +375,90 @@ function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis) {
     const wavePeriod = parseFloat(swellAnalysis.text.match(/@ ([\d.]+)s/)?.[1]) || 0;
     const isFiring = waveHeight >= 10 && wavePeriod >= 18 && tideAnalysis.isDropping;
     
+    // Enhanced confidence when ML prediction is available
+    const hasMLPrediction = predictionScore !== null && predictionScore !== undefined;
+    
     if (isFiring) {
         quality = 'firing';
         emoji = '🔥';
-        confidence = 5;
+        confidence = hasMLPrediction ? 5 : 5;
     } else if (combinedScore >= 4.2) {
         quality = 'epic';
         emoji = '⚡';
-        confidence = 5;
+        confidence = hasMLPrediction ? 5 : 5;
     } else if (combinedScore >= 3.5) {
         quality = 'good';
         emoji = '👌';
-        confidence = 4;
+        confidence = hasMLPrediction ? 5 : 4;
     } else if (combinedScore >= 2.5) {
         quality = 'fair';
         emoji = '🤷‍♂️';
-        confidence = 3;
+        confidence = hasMLPrediction ? 4 : 3;
     } else if (combinedScore >= 1.5) {
         quality = 'poor';
         emoji = '😬';
-        confidence = 2;
+        confidence = hasMLPrediction ? 3 : 2;
     } else {
         quality = 'terrible';
         emoji = '💀';
-        confidence = 1;
+        confidence = hasMLPrediction ? 2 : 1;
     }
     
-    return { quality, emoji, confidence, score: combinedScore, isFiring };
+    return { quality, emoji, confidence, score: combinedScore, isFiring, hasMLPrediction };
 }
 
 // Generate AI summary text
 function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuality, data) {
-    const { waveHeight, wavePeriod, windSpeed, windDirection } = data;
+    const { waveHeight, wavePeriod, windSpeed, windDirection, predictionScore, predictionLoading } = data;
     
     // Special handling for tide-dependent recommendations
     const tideRecommendation = getTideRecommendation(tideAnalysis, windAnalysis, swellAnalysis);
     
+    // Add ML prediction context if available
+    let mlContext = '';
+    if (predictionLoading) {
+        mlContext = ' 🧠 Crunching ML data...';
+    } else if (predictionScore !== null && predictionScore !== undefined) {
+        const mlScore = Math.round(predictionScore * 10) / 10;
+        if (mlScore >= 7) {
+            mlContext = ` 🧠 ML confidence: HIGH (${mlScore}/10)`;
+        } else if (mlScore >= 4) {
+            mlContext = ` 🧠 ML says: moderate (${mlScore}/10)`;
+        } else {
+            mlContext = ` 🧠 ML caution: ${mlScore}/10`;
+        }
+    }
+    
     const summaries = {
         firing: [
-            `🔥 FIRING! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. This is IT - drop everything and surf NOW!`,
-            `🚨 BREAKING: Epic conditions! ${swellAnalysis.text} with ${windAnalysis.text} and ${tideAnalysis.text}. All systems GO!`,
-            `⚡ NUCLEAR! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. The stars have aligned - GO SURF!`
+            `🔥 FIRING! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. This is IT - drop everything and surf NOW!${mlContext}`,
+            `🚨 BREAKING: Epic conditions! ${swellAnalysis.text} with ${windAnalysis.text} and ${tideAnalysis.text}. All systems GO!${mlContext}`,
+            `⚡ NUCLEAR! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. The stars have aligned - GO SURF!${mlContext}`
         ],
         epic: [
-            `⚡ Epic session brewing! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}`,
-            `🏄‍♂️ Premium conditions! ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. ${tideRecommendation}`,
-            `🔥 Solid surf alert! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}`
+            `⚡ Epic session brewing! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `🏄‍♂️ Premium conditions! ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `🔥 Solid surf alert! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`
         ],
         good: [
-            `👌 Quality waves ahead! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}`,
-            `🌊 Nice conditions brewing! ${swellAnalysis.description} meets ${windAnalysis.description} with ${tideAnalysis.text}. ${tideRecommendation}`,
-            `🤙 Solid session potential! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}`
+            `👌 Quality waves ahead! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `🌊 Nice conditions brewing! ${swellAnalysis.description} meets ${windAnalysis.description} with ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `🤙 Solid session potential! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`
         ],
         fair: [
-            `🤷‍♂️ Mixed bag today. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}`,
-            `⚖️ So-so conditions. ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. ${tideRecommendation}`,
-            `🌪️ Challenging surf. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}`
+            `🤷‍♂️ Mixed bag today. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `⚖️ So-so conditions. ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `🌪️ Challenging surf. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`
         ],
         poor: [
-            `😬 Rough conditions. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation || 'Maybe check the cam first?'}`,
-            `🌊💨 Messy surf today. ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. Better days ahead!`,
-            `📚 Study session weather. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Time to wax your board!`
+            `😬 Rough conditions. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation || 'Maybe check the cam first?'}${mlContext}`,
+            `🌊💨 Messy surf today. ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. Better days ahead!${mlContext}`,
+            `📚 Study session weather. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Time to wax your board!${mlContext}`
         ],
         terrible: [
-            `💀 Gnarly out there! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Stay on the beach!`,
-            `⚠️ Danger zone! ${windAnalysis.description} with ${swellAnalysis.description} and ${tideAnalysis.text}. Not surfable!`,
-            `🏠 Indoor day! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Surf movies and planning time!`
+            `💀 Gnarly out there! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Stay on the beach!${mlContext}`,
+            `⚠️ Danger zone! ${windAnalysis.description} with ${swellAnalysis.description} and ${tideAnalysis.text}. Not surfable!${mlContext}`,
+            `🏠 Indoor day! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Surf movies and planning time!${mlContext}`
         ]
     };
     
@@ -412,6 +508,15 @@ function getWindDirectionText(degrees) {
     if (degrees >= 247.5 && degrees < 292.5) return 'W';
     if (degrees >= 292.5 && degrees < 337.5) return 'NW';
     return 'N/A';
+}
+
+// Helper function to get simple wind direction for ML prediction
+function getSimpleWindDirection(degrees) {
+    if (degrees >= 315 || degrees < 45) return 'N';
+    if (degrees >= 45 && degrees < 135) return 'E';
+    if (degrees >= 135 && degrees < 225) return 'S';
+    if (degrees >= 225 && degrees < 315) return 'W';
+    return 'W'; // Default fallback
 }
 
 export default SurfAISummary;
