@@ -520,27 +520,27 @@ function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuali
         ],
         epic: [
             `⚡ Epic session brewing! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
-            `🏄‍♂️ Premium conditions! ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `🏄‍♂️ Premium conditions! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
             `🔥 Solid surf alert! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`
         ],
         good: [
             `👌 Quality waves ahead! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
-            `🌊 Nice conditions brewing! ${swellAnalysis.description} meets ${windAnalysis.description} with ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `🌊 Nice conditions brewing! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
             `🤙 Solid session potential! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`
         ],
         fair: [
             `🤷‍♂️ Mixed bag today. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
-            `⚖️ So-so conditions. ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
+            `⚖️ So-so conditions. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`,
             `🌪️ Challenging surf. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation}${mlContext}`
         ],
         poor: [
             `😬 Rough conditions. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. ${tideRecommendation || 'Maybe check the cam first?'}${mlContext}`,
-            `🌊💨 Messy surf today. ${swellAnalysis.description} with ${windAnalysis.description} and ${tideAnalysis.text}. Better days ahead!${mlContext}`,
+            `🌊💨 Messy surf today. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Better days ahead!${mlContext}`,
             `📚 Study session weather. ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Time to wax your board!${mlContext}`
         ],
         terrible: [
             `💀 Gnarly out there! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Stay on the beach!${mlContext}`,
-            `⚠️ Danger zone! ${windAnalysis.description} with ${swellAnalysis.description} and ${tideAnalysis.text}. Not surfable!${mlContext}`,
+            `⚠️ Danger zone! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Not surfable!${mlContext}`,
             `🏠 Indoor day! ${swellAnalysis.text}, ${windAnalysis.text}, ${tideAnalysis.text}. Surf movies and planning time!${mlContext}`
         ]
     };
