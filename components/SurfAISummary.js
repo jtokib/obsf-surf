@@ -469,7 +469,7 @@ function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuali
             terrible: [
                 `💨 TOO WINDY! ${windAnalysis.text} is making it unsurfable despite ${swellAnalysis.description}. Wind ruins everything - stay home!`,
                 `🌪️ BLOWN OUT! ${windAnalysis.text} has destroyed the surf. Even with ${swellAnalysis.description}, it's chaos out there!`,
-                `💀 VICTORY AT SEA! ${windAnalysis.text} - doesn't matter if the swell is ${swellAnalysis.description}, it's unfoldable!`,
+                `💀 VICTORY AT SEA! ${windAnalysis.text} - doesn't matter if the swell is ${swellAnalysis.description}, it's unrideable!`,
                 `🚫 WIND ADVISORY! ${windAnalysis.text} makes surfing impossible. ${swellAnalysis.text} but too windy to matter!`
             ],
             poor: [
