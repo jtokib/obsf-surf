@@ -7,6 +7,11 @@ export default async function handler(req, res) {
     try {
         const { tide, wind, pt_reyes, sf_bar } = req.body;
 
+        // Check if the prediction API URL is configured
+        if (!process.env.NEXT_PUBLIC_PREDICT_API_URL) {
+            throw new Error('NEXT_PUBLIC_PREDICT_API_URL environment variable is not configured');
+        }
+
         // Build URL with query parameters if any exist
         const url = new URL(process.env.NEXT_PUBLIC_PREDICT_API_URL);
         if (req.url.includes('?')) {
@@ -29,8 +34,8 @@ export default async function handler(req, res) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("Error from Cloud Function:", errorText);
-            throw new Error('Failed to get prediction from the prediction service.');
+            console.error("Error from Cloud Function:", response.status, errorText);
+            throw new Error(`Prediction service returned ${response.status}: ${errorText}`);
         }
 
         const data = await response.json();
