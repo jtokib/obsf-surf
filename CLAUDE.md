@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is obsuf.surf - a specialized surf conditions website for Ocean Beach, San Francisco. The site provides real-time surf data, buoy readings, tide schedules, and wind conditions with a retro 80s synthwave aesthetic.
+This is obsuf.surf - a specialized surf conditions website for Ocean Beach, San Francisco. The site provides real-time surf data, buoy readings, tide schedules, and wind conditions with a modern surf-inspired design featuring clean cards and intelligent AI analysis.
 
 ## Development Commands
 
@@ -24,19 +24,20 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - **Styling**: Global CSS in `styles/globals.css` with CSS-in-JS patterns
 
 ### Key Components
-- **Layout.js**: Main layout wrapper with dark/light mode toggle, easter eggs, and footer
+- **Layout.js**: Main layout wrapper with dark/light mode toggle (defaults to dark), easter eggs, and footer
 - **SurfConditions.js**: Main surf data dashboard with tabbed interface for buoy data, winds, tides
-- **SurfAISummary.js**: AI-powered surf analysis with BigQuery ML predictions and comprehensive tide analysis
-- **HeroSection.js**: Landing section component
+- **SurfAISummary.js**: Advanced AI-powered surf analysis with BigQuery ML predictions, wind-weighted conditions, and AI validation
+- **HeroSection.js**: Hero section with full-width ocean background image
+- **TideTable.js**: Interactive tide schedule with chart and clean data rows
 - **ParallaxSection.js**: Parallax image sections using Framer Motion
-- **TideTable.js**: Tide schedule display component
 
 ### API Endpoints
-- `/api/buoy` - SF Bar Buoy wave data
-- `/api/wind` - Wind conditions
-- `/api/tide` - Tide predictions
-- `/api/predict` - BigQuery ML surf score predictions via Google Cloud Function
-- `/api/magic8ball` - Random surf advice
+- `/api/buoy` - SF Bar Buoy wave data (cleaned up console logging)
+- `/api/wind` - Wind conditions with multiple fallback sources
+- `/api/tide` - Tide predictions with comprehensive analysis
+- `/api/predict` - BigQuery ML surf score predictions via Google Cloud Function (enhanced error handling)
+- `/api/validate-summary` - AI-powered summary validation and improvement using OpenAI
+- `/api/magic8ball` - Random surf advice with ML integration
 - `/api/sitemap` - Dynamic sitemap generation
 - `/api/robots` - Robots.txt generation
 
@@ -44,16 +45,24 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - CDIP (Coastal Data Information Program) for buoy and wave model data
 - Windy.com embedded widget for wind visualization
 - Google Cloud BigQuery ML for surf condition predictions
+- OpenAI GPT-3.5-turbo for summary validation and improvement (optional)
+- Unsplash for hero background imagery
 - Various oceanographic APIs for real-time conditions
 
 ### Special Features
-- **AI-Powered Surf Analysis**: Real-time surf condition assessment with BigQuery ML predictions
-- **Comprehensive Tide Analysis**: Advanced tide timing recommendations for optimal surf sessions
-- **Dark/Light Mode**: Persistent theme switching with localStorage
+- **Wind-Weighted AI Analysis**: Intelligent surf assessment that properly weights wind conditions as the primary limiting factor
+- **AI Summary Validation**: Optional OpenAI integration to ensure all summaries are grammatically correct and human-readable
+- **BigQuery ML Integration**: Real-time surf score predictions with confidence ratings
+- **Comprehensive Tide Analysis**: Advanced tide timing recommendations with optimal session windows
+- **Smart Content Overlap**: Hero image with overlapping content for better space utilization
+- **Clean Card Design**: Simplified UI with borders/shadows only where they add value
+- **Dark Mode Default**: Automatically defaults to dark theme for better surf aesthetic
+- **Interactive Tide Tables**: Visual charts combined with organized data rows
+- **Centered Image Display**: Properly centered buoy and nowcast images
+- **Clean Error Handling**: Graceful fallbacks for all API failures
+- **Responsive Design**: Mobile-first approach with optimized layouts
 - **Easter Eggs**: Secret keyboard sequence "saki" triggers love message
-- **Animations**: Framer Motion throughout for smooth transitions
-- **Retro Styling**: 80s-inspired neon/synthwave aesthetic
-- **Responsive**: Mobile-first design
+- **Framer Motion**: Smooth animations and micro-interactions
 
 ### Deployment
 - Configured for Vercel deployment
@@ -65,4 +74,8 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - Uses ES modules (`"type": "module"` in package.json)
 - Google Tag Manager integration in _app.js
 - Framer Motion for animations and micro-interactions
-- localStorage for user preferences
+- localStorage for user preferences (dark mode, etc.)
+- Console logging minimized for cleaner development experience
+- Optional OpenAI integration (graceful degradation without API key)
+- Wind conditions properly override good swell/tide when >12kts onshore
+- All API endpoints have robust error handling and fallbacks
