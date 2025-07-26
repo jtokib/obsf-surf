@@ -15,10 +15,19 @@ export default function Home() {
                 <meta name="twitter:card" content="summary_large_image" />
             </Head>
 
-            <main className="main-content">
-                <div className="container">
-                    <HeroSection />
-                    <SurfConditions />
+            <main>
+                {/* Full-width ocean hero section with beautiful imagery */}
+                <div className="ocean-hero">
+                    <div className="container">
+                        <HeroSection />
+                    </div>
+                </div>
+                
+                {/* Main content section */}
+                <div className="main-content">
+                    <div className="container">
+                        <SurfConditions />
+                    </div>
                 </div>
             </main>
         </Layout>

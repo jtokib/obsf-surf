@@ -8,10 +8,6 @@ export default async function handler(req, res) {
         // This should return recent wave height, period, and direction data
         const apiUrl = `https://cdip.ucsd.edu/data_access/justdar.cdip?142+sp`;
         
-        console.log('=== CDIP API Request ===');
-        console.log('API URL:', apiUrl);
-        console.log('Attempting direct station access');
-        console.log('=== End API Request ===');
         
         const response = await fetch(
             apiUrl,
@@ -28,20 +24,11 @@ export default async function handler(req, res) {
 
         const textData = await response.text();
         
-        // Log the raw text response for troubleshooting
-        console.log('=== CDIP Text Response ===');
-        console.log('Response length:', textData.length);
-        console.log('First 500 characters:', textData.substring(0, 500));
-        console.log('=== End Text Response ===');
         
         // Parse text response - look for the wave parameters line
         // Format: Hs(m):  0.82   Tp(s): 15.38   Dp(deg): 222   Ta(s):  8.48
         const waveParamsMatch = textData.match(/Hs\(m\):\s*([\d.]+)\s+Tp\(s\):\s*([\d.]+)\s+Dp\(deg\):\s*(\d+)/);
         
-        // Log parsing results
-        console.log('=== Text Parsing Results ===');
-        console.log('Wave params match:', waveParamsMatch);
-        console.log('=== End Parsing Results ===');
         
         if (waveParamsMatch) {
             const formattedData = {

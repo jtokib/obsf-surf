@@ -6,10 +6,14 @@ export default function Layout({ children }) {
     const [scanlineEffect, setScanlineEffect] = useState(false);
 
     useEffect(() => {
-        // Check localStorage for dark mode preference
+        // Check localStorage for dark mode preference, default to dark mode
         const savedMode = localStorage.getItem('dm');
         if (savedMode !== null) {
             setDarkMode(savedMode === '1');
+        } else {
+            // No saved preference, default to dark mode and save it
+            setDarkMode(true);
+            localStorage.setItem('dm', '1');
         }
 
         // Add scanline effect periodically
