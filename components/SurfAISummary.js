@@ -188,15 +188,23 @@ function analyzeWind(direction, speed) {
             score: 4,
             isOffshore: false
         };
-    } else if (speed <= 10) {
+    } else if (speed <= 8) {
         return {
             quality: 'fair',
             description: 'windy',
             text: `${speed}kts ${directionText} (windy)`,
+            score: 2.5,
+            isOffshore: false
+        };
+    } else if (speed <= 12) {
+        return {
+            quality: 'poor',
+            description: 'very windy',
+            text: `${speed}kts ${directionText} (very windy)`,
             score: 2,
             isOffshore: false
         };
-    } else if (speed <= 20) {
+    } else if (speed <= 18) {
         return {
             quality: 'poor',
             description: 'not surfable',
@@ -357,7 +365,51 @@ function analyzeSwell(height, period) {
 
 // Calculate overall surf quality with tide weighting and ML prediction
 function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, predictionScore = null) {
-    // Base combined score: swell and wind are primary, tide is secondary but important
+    // CRITICAL: If wind is too strong (>15kts onshore), conditions are not surfable
+    // regardless of how good swell or tide might be
+    if (windAnalysis.score <= 1 && !windAnalysis.isOffshore) {
+        return {
+            quality: 'terrible',
+            emoji: '💨',
+            confidence: 5, // High confidence that strong onshore wind = not surfable
+            score: 0.5,
+            isFiring: false,
+            hasMLPrediction: predictionScore !== null && predictionScore !== undefined,
+            windOverride: true
+        };
+    }
+    
+    // WIND OVERRIDE: If wind is poor (>10kts onshore), heavily penalize
+    if (windAnalysis.score <= 2 && !windAnalysis.isOffshore) {
+        // Cap the overall score at 2.5 max when wind is poor
+        let combinedScore = Math.min(2.5, (windAnalysis.score * 0.6 + swellAnalysis.score * 0.3 + tideAnalysis.score * 0.1));
+        
+        if (predictionScore !== null && predictionScore !== undefined) {
+            const normalizedPrediction = Math.max(0, Math.min(2.5, predictionScore / 4)); // Cap ML at 2.5 too
+            combinedScore = Math.min(2.5, combinedScore * 0.8 + normalizedPrediction * 0.2);
+        }
+        
+        let quality, emoji;
+        if (combinedScore >= 2.0) {
+            quality = 'poor';
+            emoji = '💨';
+        } else {
+            quality = 'terrible';
+            emoji = '🌪️';
+        }
+        
+        return {
+            quality,
+            emoji,
+            confidence: 4,
+            score: combinedScore,
+            isFiring: false,
+            hasMLPrediction: predictionScore !== null && predictionScore !== undefined,
+            windOverride: true
+        };
+    }
+    
+    // Normal calculation when wind is manageable
     let combinedScore = (windAnalysis.score * 0.4 + swellAnalysis.score * 0.4 + tideAnalysis.score * 0.2);
     
     // If we have ML prediction, blend it in (prediction score is typically 0-10)
@@ -410,6 +462,37 @@ function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, pred
 // Generate AI summary text
 function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuality, data) {
     const { waveHeight, wavePeriod, windSpeed, windDirection, predictionScore, predictionLoading } = data;
+    
+    // WIND OVERRIDE: Special messages when wind ruins otherwise good conditions
+    if (overallQuality.windOverride) {
+        const windOverrideMessages = {
+            terrible: [
+                `💨 TOO WINDY! ${windAnalysis.text} is making it unsurfable despite ${swellAnalysis.description}. Wind ruins everything - stay home!`,
+                `🌪️ BLOWN OUT! ${windAnalysis.text} has destroyed the surf. Even with ${swellAnalysis.description}, it's chaos out there!`,
+                `💀 VICTORY AT SEA! ${windAnalysis.text} - doesn't matter if the swell is ${swellAnalysis.description}, it's unfoldable!`,
+                `🚫 WIND ADVISORY! ${windAnalysis.text} makes surfing impossible. ${swellAnalysis.text} but too windy to matter!`
+            ],
+            poor: [
+                `💨 WINDY & BUMPY! ${windAnalysis.text} is chopping up the surf. ${swellAnalysis.description} but very challenging conditions.`,
+                `🌊💨 WIND AFFECTED! ${windAnalysis.text} creating tough conditions despite ${swellAnalysis.description}. For experts only!`,
+                `⚠️ MANAGEABLE BUT MESSY! ${windAnalysis.text} making it bumpy. ${swellAnalysis.text} but wind is the limiting factor.`,
+                `🤙 HARDCORE SESSION! ${windAnalysis.text} - doable but gnarly. ${swellAnalysis.description} underneath the chop.`
+            ]
+        };
+        
+        const messages = windOverrideMessages[overallQuality.quality] || windOverrideMessages.terrible;
+        let baseMessage = messages[Math.floor(Math.random() * messages.length)];
+        
+        // Add ML context if available
+        if (predictionLoading) {
+            baseMessage += ' 🧠 ML confirms: wind matters most...';
+        } else if (predictionScore !== null && predictionScore !== undefined) {
+            const mlScore = Math.round(predictionScore * 10) / 10;
+            baseMessage += ` 🧠 ML agrees: wind-limited (${mlScore}/10)`;
+        }
+        
+        return baseMessage;
+    }
     
     // Special handling for tide-dependent recommendations
     const tideRecommendation = getTideRecommendation(tideAnalysis, windAnalysis, swellAnalysis);
