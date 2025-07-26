@@ -4,6 +4,36 @@ import { motion } from 'framer-motion';
 const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
     const [predictionScore, setPredictionScore] = useState(null);
     const [predictionLoading, setPredictionLoading] = useState(false);
+    const [validatedSummary, setValidatedSummary] = useState(null);
+    const [summaryValidating, setSummaryValidating] = useState(false);
+
+    // Validate and potentially improve summary with AI
+    const validateSummary = async (summary, surfData) => {
+        try {
+            const response = await fetch('/api/validate-summary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    summary,
+                    surfData
+                }),
+            });
+
+            if (!response.ok) {
+                // Fallback to original summary
+                return { validatedSummary: summary, wasValidated: false };
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.warn('Summary validation failed:', error);
+            // Always fallback to original summary on error
+            return { validatedSummary: summary, wasValidated: false };
+        }
+    };
 
     // Get BQML prediction
     const getPrediction = async (surfConditions) => {
@@ -122,6 +152,33 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
         };
     }, [buoyData, windData, tideData, loading, predictionScore, predictionLoading]);
 
+    // Validate summary with AI when it changes
+    useEffect(() => {
+        if (surfAnalysis.summary && !loading && !summaryValidating) {
+            setSummaryValidating(true);
+            
+            const surfData = {
+                waveHeight: parseFloat(buoyData?.Hs) || 0,
+                wavePeriod: parseFloat(buoyData?.Tp) || 0,
+                windSpeed: parseFloat(windData?.speed) || 0,
+                windDirection: windData?.direction || 0
+            };
+
+            validateSummary(surfAnalysis.summary, surfData)
+                .then(result => {
+                    setValidatedSummary(result.validatedSummary);
+                    setSummaryValidating(false);
+                })
+                .catch(() => {
+                    setValidatedSummary(surfAnalysis.summary); // Fallback
+                    setSummaryValidating(false);
+                });
+        }
+    }, [surfAnalysis.summary]);
+
+    // Use validated summary if available, otherwise use original
+    const displaySummary = validatedSummary || surfAnalysis.summary;
+
     return (
         <motion.div 
             className="surf-ai-summary"
@@ -149,7 +206,7 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
                     </span>
                 </div>
                 <div className="ai-summary-text">
-                    {surfAnalysis.summary}
+                    {summaryValidating ? `${displaySummary} ✨` : displaySummary}
                 </div>
             </motion.div>
         </motion.div>
