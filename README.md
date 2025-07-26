@@ -4,8 +4,9 @@ A retro-styled Next.js web application providing real-time surf conditions for O
 
 ## 🏄‍♂️ Features
 
+- **AI-Powered Surf Analysis**: Smart surf condition assessment with BigQuery ML predictions
 - **Real-time Surf Data**: Live buoy readings from SF Bar Buoy (46026)
-- **Tide Information**: Current and upcoming tide schedules
+- **Advanced Tide Analysis**: Comprehensive tide timing recommendations for optimal sessions
 - **Wind Conditions**: Embedded Windy.com wind visualization
 - **Retro Design**: 80s-inspired neon/synthwave aesthetic with animations
 - **Dark/Light Mode**: Toggle between themes with persistent preferences
@@ -38,15 +39,17 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ### Key Components
 
 - `SurfConditions.js` - Main surf data dashboard with tabbed interface
+- `SurfAISummary.js` - AI-powered surf analysis with BigQuery ML predictions
 - `Layout.js` - Main layout wrapper with theme toggle and footer
 - `HeroSection.js` - Landing section component
-- `TideTable.js` - Tide schedule display
+- `TideTable.js` - Tide schedule display with advanced analysis
 
 ### API Endpoints
 
 - `/api/buoy` - SF Bar Buoy wave data
 - `/api/wind` - Wind conditions
 - `/api/tide` - Tide predictions
+- `/api/predict` - BigQuery ML surf score predictions via Google Cloud Function
 - `/api/magic8ball` - Random surf advice
 - `/api/sitemap` - Dynamic sitemap generation
 - `/api/robots` - Robots.txt generation
@@ -54,11 +57,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## 🌊 Data Sources
 
 - **CDIP** (Coastal Data Information Program) for buoy and wave model data
+- **Google Cloud BigQuery ML** for surf condition predictions
 - **Windy.com** embedded widget for wind visualization
 - **Various oceanographic APIs** for real-time conditions
 
 ## 🎨 Special Features
 
+- **Smart AI Analysis**: Real-time surf condition assessment with machine learning
+- **Tide Intelligence**: Advanced tide timing recommendations for optimal sessions
 - **Retro Styling**: 80s-inspired neon/synthwave aesthetic
 - **Animations**: Framer Motion throughout for smooth transitions
 - **Theme Switching**: Persistent dark/light mode with localStorage

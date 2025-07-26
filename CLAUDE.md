@@ -26,6 +26,7 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 ### Key Components
 - **Layout.js**: Main layout wrapper with dark/light mode toggle, easter eggs, and footer
 - **SurfConditions.js**: Main surf data dashboard with tabbed interface for buoy data, winds, tides
+- **SurfAISummary.js**: AI-powered surf analysis with BigQuery ML predictions and comprehensive tide analysis
 - **HeroSection.js**: Landing section component
 - **ParallaxSection.js**: Parallax image sections using Framer Motion
 - **TideTable.js**: Tide schedule display component
@@ -34,6 +35,7 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - `/api/buoy` - SF Bar Buoy wave data
 - `/api/wind` - Wind conditions
 - `/api/tide` - Tide predictions
+- `/api/predict` - BigQuery ML surf score predictions via Google Cloud Function
 - `/api/magic8ball` - Random surf advice
 - `/api/sitemap` - Dynamic sitemap generation
 - `/api/robots` - Robots.txt generation
@@ -41,9 +43,12 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 ### External Data Sources
 - CDIP (Coastal Data Information Program) for buoy and wave model data
 - Windy.com embedded widget for wind visualization
+- Google Cloud BigQuery ML for surf condition predictions
 - Various oceanographic APIs for real-time conditions
 
 ### Special Features
+- **AI-Powered Surf Analysis**: Real-time surf condition assessment with BigQuery ML predictions
+- **Comprehensive Tide Analysis**: Advanced tide timing recommendations for optimal surf sessions
 - **Dark/Light Mode**: Persistent theme switching with localStorage
 - **Easter Eggs**: Secret keyboard sequence "saki" triggers love message
 - **Animations**: Framer Motion throughout for smooth transitions

@@ -7,7 +7,14 @@ export default async function handler(req, res) {
     try {
         const { tide, wind, pt_reyes, sf_bar } = req.body;
 
-        const response = await fetch(process.env.NEXT_PUBLIC_PREDICT_API_URL, {
+        // Build URL with query parameters if any exist
+        const url = new URL(process.env.NEXT_PUBLIC_PREDICT_API_URL);
+        if (req.url.includes('?')) {
+            const queryString = req.url.split('?')[1];
+            url.search = queryString;
+        }
+
+        const response = await fetch(url.toString(), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
