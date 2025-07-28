@@ -6,7 +6,9 @@
       "Bash(git push:*)",
       "Bash(rm:*)",
       "Bash(npm install:*)",
-      "Bash(npx tailwindcss:*)"
+      "Bash(npx tailwindcss:*)",
+      "WebFetch(domain:unsplash.com)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

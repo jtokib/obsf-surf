@@ -187,6 +187,19 @@ a:hover {
     text-shadow: 0 2px 20px rgba(0, 119, 190, 0.1);
 }
 
+.hero-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.hero-logo img {
+    border-radius: 12px;
+    max-width: 100%;
+    height: auto;
+}
+
 /* Main Content */
 .main-content {
     background: var(--surface);
@@ -702,6 +715,11 @@ a:hover {
 
     .hero-title {
         font-size: clamp(2rem, 8vw, 3rem);
+    }
+
+    .hero-logo img {
+        max-width: 90%;
+        border-radius: 8px;
     }
 
     .condition-item {

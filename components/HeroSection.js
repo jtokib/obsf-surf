@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function HeroSection() {
     return (
@@ -8,9 +9,19 @@ export default function HeroSection() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="ocean-hero"
         >
-            <h1 className="hero-title">
-                OBSF Surf Conditions
-            </h1>
+            <div className="hero-logo">
+                <Image
+                    src="/images/website/obsf.png"
+                    alt="OBSF Surf Conditions"
+                    width={400}
+                    height={240}
+                    style={{
+                        objectFit: 'cover',
+                        objectPosition: 'center 35%'
+                    }}
+                    priority
+                />
+            </div>
         </motion.div>
     );
 }
