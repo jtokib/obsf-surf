@@ -260,9 +260,38 @@ export function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysi
 
 // Generate AI summary text
 export function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuality, data) {
-    // ...copy the full generateSummary function from SurfAISummary.js...
-    // For brevity, you can move the entire function body here as-is.
-    // (Omitted here for space, but will be included in the actual file.)
+    console.log('[surfAnalysisUtils] generateSummary called', { windAnalysis, swellAnalysis, tideAnalysis, overallQuality, data });
+    try {
+        if (!windAnalysis || !swellAnalysis || !tideAnalysis || !overallQuality) {
+            return 'Surf summary unavailable.';
+        }
+
+        // Compose a readable summary from the analysis objects
+        const wind = windAnalysis.text || '';
+        const swell = swellAnalysis.text || '';
+        const tide = tideAnalysis.text || '';
+        const quality = overallQuality.quality || '';
+        const emoji = overallQuality.emoji || '';
+        const firing = overallQuality.isFiring ? 'Conditions are FIRING! ' : '';
+        const confidence = overallQuality.confidence ? `Confidence: ${overallQuality.confidence}/5.` : '';
+
+        // Optionally include prediction score if present
+        let prediction = '';
+        if (data && typeof data.predictionScore === 'number') {
+            prediction = `ML Prediction Score: ${data.predictionScore.toFixed(2)}. `;
+        }
+
+        // Add a tide recommendation if available
+        let tideRec = '';
+        if (typeof getTideRecommendation === 'function') {
+            tideRec = getTideRecommendation(tideAnalysis, windAnalysis, swellAnalysis);
+        }
+
+        return `${emoji} ${firing}Surf is ${quality}. ${swell} | ${wind} | ${tide}. ${prediction}${confidence} ${tideRec}`.replace(/\s+/g, ' ').trim();
+    } catch (err) {
+        console.error('[surfAnalysisUtils] generateSummary error:', err);
+        return 'Surf summary unavailable.';
+    }
 }
 
 // Generate tide-specific recommendations

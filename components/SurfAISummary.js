@@ -19,6 +19,7 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
 
     // Fetch prediction when surf data changes
     useEffect(() => {
+        // Always attempt to get a prediction, but summary/validation will proceed regardless of prediction result
         if (buoyData && windData && tideData && !loading) {
             setPredictionLoading(true);
             const waveHeight = parseFloat(buoyData.Hs) || 0;
@@ -44,6 +45,8 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
                     setPredictionLoading(false);
                 })
                 .catch(() => {
+                    // If prediction fails, set score to null and proceed
+                    setPredictionScore(null);
                     setPredictionLoading(false);
                 });
         }
@@ -75,6 +78,7 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
             predictionScore,
             predictionLoading
         });
+        console.log('[SurfAISummary] Computed summary:', summary);
         return {
             summary,
             quality: overallQuality.quality,
@@ -90,18 +94,18 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
         };
     }, [buoyData, windData, tideData, loading, predictionScore, predictionLoading]);
 
-    // Only validate summary after both predictionScore and surfAnalysis.summary are ready
-    const validatedOnce = useRef(false);
+    // Prevent infinite validation loop by tracking last validated summary
+    const lastValidatedSummary = useRef(null);
     useEffect(() => {
+        // Always validate the summary, even if prediction failed (score is null)
         if (
             surfAnalysis.summary &&
             !loading &&
             !summaryValidating &&
-            predictionScore !== null &&
-            !validatedOnce.current
+            surfAnalysis.summary !== lastValidatedSummary.current
         ) {
             setSummaryValidating(true);
-            validatedOnce.current = true;
+            lastValidatedSummary.current = surfAnalysis.summary;
             const surfData = {
                 waveHeight: parseFloat(buoyData?.Hs) || 0,
                 wavePeriod: parseFloat(buoyData?.Tp) || 0,
@@ -118,19 +122,19 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
                     setSummaryValidating(false);
                 });
         }
-    }, [surfAnalysis.summary, predictionScore, loading, summaryValidating, buoyData, windData]);
+    }, [surfAnalysis.summary, loading, summaryValidating, buoyData, windData]);
 
     // Use validated summary if available, otherwise use original
     const displaySummary = validatedSummary || surfAnalysis.summary;
 
     return (
-        <motion.div 
+        <motion.div
             className="surf-ai-summary"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
         >
-            <motion.div 
+            <motion.div
                 className={`ai-summary-content ${surfAnalysis.quality}`}
                 whileHover={{ scale: 1.01 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -140,8 +144,8 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
                     <span className="ai-label">🤖 SURF AI</span>
                     <span className="confidence-indicator">
                         {Array.from({ length: 5 }, (_, i) => (
-                            <span 
-                                key={i} 
+                            <span
+                                key={i}
                                 className={`confidence-dot ${i < surfAnalysis.confidence ? 'active' : ''}`}
                             >
                                 •

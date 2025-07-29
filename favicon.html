@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSF.surf Favicon Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+
+        .favicon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .favicon-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .favicon-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #ff6b35;
+        }
+
+        .favicon-preview {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+        }
+
+        .favicon-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .favicon-size {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        .code-section {
+            background: #2c3e50;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            color: white;
+        }
+
+        .code-title {
+            color: #ff6b35;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .code-content {
+            background: #34495e;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .copy-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #2980b9;
+        }
+
+        .instructions {
+            background: #e8f5e8;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 20px 0;
+        }
+
+        .instructions h3 {
+            color: #27ae60;
+            margin-top: 0;
+        }
+
+        .file-icon {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🏄‍♂️ OBSF.surf Favicon Package</h1>
+        <p class="subtitle">Complete favicon assets with SF Giants-inspired design</p>
+
+        <div class="favicon-grid">
+            <div class="favicon-item">
+                <div class="favicon-preview">
+                    <svg width="64" height="64" viewBox="0 0 64 64">
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="32" cy="32" r="30" fill="url(#grad1)" stroke="#2c3e50" stroke-width="2" />
+                        <text x="32" y="28" text-anchor="middle" fill="white" font-family="serif" font-size="16"
+                            font-weight="bold">OB</text>
+                        <text x="32" y="44" text-anchor="middle" fill="white" font-family="serif" font-size="12"
+                            font-weight="bold" font-style="italic">SF</text>
+                    </svg>
+                </div>
+                <div class="favicon-title">Standard Favicon</div>
+                <div class="favicon-size">64x64 pixels</div>
+                <button class="download-btn" onclick="downloadFavicon(64, 'favicon-64x64.png')">Download PNG</button>
+            </div>
+
+            <div class="favicon-item">
+                <div class="favicon-preview">
+                    <svg width="32" height="32" viewBox="0 0 32 32">
+                        <defs>
+                            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="16" cy="16" r="15" fill="url(#grad2)" stroke="#2c3e50" stroke-width="1" />
+                        <text x="16" y="14" text-anchor="middle" fill="white" font-family="serif" font-size="8"
+                            font-weight="bold">OB</text>
+                        <text x="16" y="22" text-anchor="middle" fill="white" font-family="serif" font-size="6"
+                            font-weight="bold" font-style="italic">SF</text>
+                    </svg>
+                </div>
+                <div class="favicon-title">Small Favicon</div>
+                <div class="favicon-size">32x32 pixels</div>
+                <button class="download-btn" onclick="downloadFavicon(32, 'favicon-32x32.png')">Download PNG</button>
+            </div>
+
+            <div class="favicon-item">
+                <div class="favicon-preview">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                        <defs>
+                            <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="8" cy="8" r="7.5" fill="url(#grad3)" stroke="#2c3e50" stroke-width="0.5" />
+                        <text x="8" y="10" text-anchor="middle" fill="white" font-family="serif" font-size="6"
+                            font-weight="bold">OB</text>
+                    </svg>
+                </div>
+                <div class="favicon-title">Tiny Favicon</div>
+                <div class="favicon-size">16x16 pixels</div>
+                <button class="download-btn" onclick="downloadFavicon(16, 'favicon-16x16.png')">Download PNG</button>
+            </div>
+
+            <div class="favicon-item">
+                <div class="favicon-preview">
+                    <svg width="180" height="180" viewBox="0 0 180 180" style="max-width: 80px; max-height: 80px;">
+                        <defs>
+                            <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="90" cy="90" r="85" fill="url(#grad4)" stroke="#2c3e50" stroke-width="5" />
+                        <text x="90" y="75" text-anchor="middle" fill="white" font-family="serif" font-size="45"
+                            font-weight="bold">OB</text>
+                        <text x="90" y="115" text-anchor="middle" fill="white" font-family="serif" font-size="32"
+                            font-weight="bold" font-style="italic">SF</text>
+                    </svg>
+                </div>
+                <div class="favicon-title">Apple Touch Icon</div>
+                <div class="favicon-size">180x180 pixels</div>
+                <button class="download-btn" onclick="downloadFavicon(180, 'apple-touch-icon.png')">Download
+                    PNG</button>
+            </div>
+
+            <div class="favicon-item">
+                <div class="favicon-preview">
+                    <svg width="192" height="192" viewBox="0 0 192 192" style="max-width: 80px; max-height: 80px;">
+                        <defs>
+                            <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="96" cy="96" r="90" fill="url(#grad5)" stroke="#2c3e50" stroke-width="6" />
+                        <text x="96" y="80" text-anchor="middle" fill="white" font-family="serif" font-size="48"
+                            font-weight="bold">OB</text>
+                        <text x="96" y="120" text-anchor="middle" fill="white" font-family="serif" font-size="34"
+                            font-weight="bold" font-style="italic">SF</text>
+                    </svg>
+                </div>
+                <div class="favicon-title">Android Chrome</div>
+                <div class="favicon-size">192x192 pixels</div>
+                <button class="download-btn" onclick="downloadFavicon(192, 'android-chrome-192x192.png')">Download
+                    PNG</button>
+            </div>
+
+            <div class="favicon-item">
+                <div class="favicon-preview">
+                    <svg width="512" height="512" viewBox="0 0 512 512" style="max-width: 80px; max-height: 80px;">
+                        <defs>
+                            <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="256" cy="256" r="240" fill="url(#grad6)" stroke="#2c3e50" stroke-width="16" />
+                        <text x="256" y="210" text-anchor="middle" fill="white" font-family="serif" font-size="128"
+                            font-weight="bold">OB</text>
+                        <text x="256" y="320" text-anchor="middle" fill="white" font-family="serif" font-size="90"
+                            font-weight="bold" font-style="italic">SF</text>
+                    </svg>
+                </div>
+                <div class="favicon-title">Large Android Chrome</div>
+                <div class="favicon-size">512x512 pixels</div>
+                <button class="download-btn" onclick="downloadFavicon(512, 'android-chrome-512x512.png')">Download
+                    PNG</button>
+            </div>
+        </div>
+
+        <div class="code-section">
+            <div class="code-title">
+                <span class="file-icon">📄</span>
+                favicon.ico Generator
+            </div>
+            <div class="code-content" id="icoCode">Click "Generate ICO" to create the favicon.ico file</div>
+            <button class="download-btn" onclick="generateICO()" style="margin-top: 15px;">Generate ICO File</button>
+        </div>
+
+        <div class="code-section">
+            <div class="code-title">
+                <span class="file-icon">📱</span>
+                manifest.json
+            </div>
+            <div class="code-content" id="manifestCode">{
+                "name": "OBSF Surf",
+                "short_name": "OBSF",
+                "description": "OBSF Surf - San Francisco Surfing Community",
+                "start_url": "/",
+                "display": "standalone",
+                "background_color": "#FF6B35",
+                "theme_color": "#F7931E",
+                "orientation": "portrait-primary",
+                "icons": [
+                {
+                "src": "/android-chrome-192x192.png",
+                "sizes": "192x192",
+                "type": "image/png"
+                },
+                {
+                "src": "/android-chrome-512x512.png",
+                "sizes": "512x512",
+                "type": "image/png"
+                }
+                ]
+                }</div>
+            <button class="copy-btn" onclick="copyToClipboard('manifestCode')">Copy Code</button>
+            <button class="download-btn"
+                onclick="downloadFile('manifest.json', document.getElementById('manifestCode').textContent)"
+                style="margin-left: 10px;">Download File</button>
+        </div>
+
+        <div class="code-section">
+            <div class="code-title">
+                <span class="file-icon">🪟</span>
+                browserconfig.xml
+            </div>
+            <div class="code-content" id="browserconfigCode">
+                <?xml version="1.0" encoding="utf-8"?>
+                <browserconfig>
+                    <msapplication>
+                        <tile>
+                            <square150x150logo src="/mstile-150x150.png" />
+                            <TileColor>#FF6B35</TileColor>
+                        </tile>
+                    </msapplication>
+                </browserconfig>
+            </div>
+            <button class="copy-btn" onclick="copyToClipboard('browserconfigCode')">Copy Code</button>
+            <button class="download-btn"
+                onclick="downloadFile('browserconfig.xml', document.getElementById('browserconfigCode').textContent)"
+                style="margin-left: 10px;">Download File</button>
+        </div>
+
+        <div class="code-section">
+            <div class="code-title">
+                <span class="file-icon">🔗</span>
+                HTML Head Tags
+            </div>
+            <div class="code-content" id="htmlCode"><!-- Favicon and App Icons -->
+                <link rel="icon" type="image/x-icon" href="/favicon.ico">
+                <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+                <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+                <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+                <link rel="manifest" href="/manifest.json">
+                <meta name="msapplication-config" content="/browserconfig.xml">
+                <meta name="theme-color" content="#F7931E">
+                <meta name="msapplication-TileColor" content="#FF6B35">
+            </div>
+            <button class="copy-btn" onclick="copyToClipboard('htmlCode')">Copy Code</button>
+        </div>
+
+        <div class="instructions">
+            <h3>🚀 Installation Instructions</h3>
+            <ol>
+                <li><strong>Download all PNG files</strong> using the buttons above</li>
+                <li><strong>Generate and download</strong> the favicon.ico file</li>
+                <li><strong>Download</strong> manifest.json and browserconfig.xml files</li>
+                <li><strong>Upload all files</strong> to your website's root directory</li>
+                <li><strong>Add the HTML head tags</strong> to your website's &lt;head&gt; section</li>
+                <li><strong>Test</strong> by visiting your site and checking the browser tab icon</li>
+            </ol>
+            <p><strong>Note:</strong> The design features "OB" prominently with "SF" in an italicized style below, using
+                the San Francisco Giants' orange color scheme with a modern gradient twist perfect for a surf website!
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFavicon(size, filename) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Create gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#FF6B35');
+            gradient.addColorStop(1, '#F7931E');
+
+            // Draw circle
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2 - 2, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Draw border
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = size > 32 ? 4 : (size > 16 ? 2 : 1);
+            ctx.stroke();
+
+            // Draw text
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            if (size >= 32) {
+                // Draw OB
+                ctx.font = `bold ${size * 0.25}px serif`;
+                ctx.fillText('OB', size / 2, size / 2 - size * 0.08);
+
+                // Draw SF (italic)
+                ctx.font = `bold italic ${size * 0.18}px serif`;
+                ctx.fillText('SF', size / 2, size / 2 + size * 0.12);
+            } else {
+                // For 16x16, only show OB
+                ctx.font = `bold ${size * 0.375}px serif`;
+                ctx.fillText('OB', size / 2, size / 2);
+            }
+
+            // Download
+            canvas.toBlob(function (blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        function generateICO() {
+            // Create multiple sizes for ICO
+            const sizes = [16, 32, 48];
+            const canvases = [];
+
+            sizes.forEach(size => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                // Create gradient
+                const gradient = ctx.createLinearGradient(0, 0, size, size);
+                gradient.addColorStop(0, '#FF6B35');
+                gradient.addColorStop(1, '#F7931E');
+
+                // Draw circle
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(size / 2, size / 2, size / 2 - 1, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Draw border
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = size > 16 ? 2 : 1;
+                ctx.stroke();
+
+                // Draw text
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                if (size >= 32) {
+                    ctx.font = `bold ${size * 0.25}px serif`;
+                    ctx.fillText('OB', size / 2, size / 2 - size * 0.08);
+                    ctx.font = `bold italic ${size * 0.18}px serif`;
+                    ctx.fillText('SF', size / 2, size / 2 + size * 0.12);
+                } else {
+                    ctx.font = `bold ${size * 0.375}px serif`;
+                    ctx.fillText('OB', size / 2, size / 2);
+                }
+
+                canvases.push(canvas);
+            });
+
+            // For demo purposes, download the 32x32 as ICO
+            canvases[1].toBlob(function (blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'favicon.ico';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            document.getElementById('icoCode').textContent = 'favicon.ico generated successfully! (Contains 16x16, 32x32, and 48x48 versions)';
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#27ae60';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#3498db';
+                }, 2000);
+            });
+        }
+
+        function downloadFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'965e5fb2d3b622f6',t:'MTc1MzY0Mjc2NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>
