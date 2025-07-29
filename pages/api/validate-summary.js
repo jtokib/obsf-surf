@@ -1,3 +1,29 @@
+// Simple in-memory cache for validation results
+const validationCache = new Map();
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+function getCacheKey(summary, surfData) {
+    return `${summary}-${JSON.stringify(surfData)}`;
+}
+
+function getCachedResult(cacheKey) {
+    const cached = validationCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        return cached.result;
+    }
+    if (cached) {
+        validationCache.delete(cacheKey); // Remove expired entry
+    }
+    return null;
+}
+
+function setCachedResult(cacheKey, result) {
+    validationCache.set(cacheKey, {
+        result,
+        timestamp: Date.now()
+    });
+}
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         res.setHeader('Allow', ['POST']);
@@ -8,12 +34,21 @@ export default async function handler(req, res) {
         const { summary, surfData } = req.body;
 
         if (!summary) {
-            console.log('[validate-summary] No summary provided');
             return res.status(400).json({ error: 'Summary is required' });
         }
 
+        // Check cache first to avoid burning API credits
+        const cacheKey = getCacheKey(summary, surfData);
+        const cachedResult = getCachedResult(cacheKey);
+        if (cachedResult) {
+            return res.status(200).json({
+                ...cachedResult,
+                cached: true
+            });
+        }
+
         // Create a prompt for AI validation and improvement
-        const validationPrompt = `You are a grumpy surf report editor. Review this surf summary for grammar, clarity, and readability. Provide an overall stoke rating. 
+        const validationPrompt = `You are a grumpy surf report editor who's really into crystals. Review this surf summary for grammar, clarity, and readability. Provide an overall stoke rating and the crystal of the day that you recommend based on the vibe of the summary. 
 
         Original summary: "${summary}"
 
@@ -29,25 +64,24 @@ export default async function handler(req, res) {
         3. Ensure technical surf terms are used correctly
         4. Keep it under 200 characters if possible
         5. Maintain the surfer slang and personality
+        6. Provide a stoke rating from 1 to 10 based on the overall vibe of the summary
 
         Return ONLY the improved summary text, no explanations.`;
 
-        // Debug log: check if OPENAI_API_KEY is defined (do not log the key value)
-        if (typeof process.env.OPENAI_API_KEY === 'string' && process.env.OPENAI_API_KEY.length > 0) {
-            // console.log('[validate-summary] OPENAI_API_KEY is defined and non-empty');
-        } else {
-            // console.log('[validate-summary] OPENAI_API_KEY is NOT defined or empty, returning original summary');
-            // If no API key, return original summary (graceful degradation)
-            return res.status(200).json({ 
+        // Check if OPENAI_API_KEY is configured
+        if (typeof process.env.OPENAI_API_KEY !== 'string' || process.env.OPENAI_API_KEY.length === 0) {
+            const fallbackResult = { 
                 validatedSummary: summary,
                 wasValidated: false,
                 fallback: true,
                 reason: 'OpenAI API key not configured'
-            });
+            };
+            // Cache fallback result to avoid repeated checks
+            setCachedResult(cacheKey, fallbackResult);
+            return res.status(200).json(fallbackResult);
         }
 
         // Use OpenAI to validate/improve the summary
-        // console.log('[validate-summary] Calling OpenAI API for summary validation...');
         const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -72,56 +106,71 @@ export default async function handler(req, res) {
         });
 
         if (!aiResponse.ok) {
-            // If AI validation fails, return original summary
-            // console.warn('[validate-summary] AI validation failed, returning original summary. Status:', aiResponse.status);
-            return res.status(200).json({ 
+            const fallbackResult = { 
                 validatedSummary: summary,
                 wasValidated: false,
-                fallback: true 
-            });
+                fallback: true,
+                reason: `OpenAI API error: ${aiResponse.status}`
+            };
+            // Cache fallback result for failed API calls
+            setCachedResult(cacheKey, fallbackResult);
+            return res.status(200).json(fallbackResult);
         }
 
         const aiData = await aiResponse.json();
-        // console.log('[validate-summary] OpenAI API response:', JSON.stringify(aiData));
         const validatedSummary = aiData.choices?.[0]?.message?.content?.trim();
 
         if (!validatedSummary || validatedSummary.length === 0) {
-            // Fallback to original if AI returns empty
-            // console.warn('[validate-summary] AI returned empty summary, using original');
-            return res.status(200).json({ 
+            const fallbackResult = { 
                 validatedSummary: summary,
                 wasValidated: false,
-                fallback: true 
-            });
+                fallback: true,
+                reason: 'AI returned empty response'
+            };
+            // Cache fallback result
+            setCachedResult(cacheKey, fallbackResult);
+            return res.status(200).json(fallbackResult);
         }
 
         // Basic sanity check - if AI response is dramatically different or too long, use original
-        if (validatedSummary.length > summary.length * 1.5 || validatedSummary.length > 300) {
-            // console.warn('[validate-summary] AI response too long or too different, using original');
-            return res.status(200).json({ 
+        // Allow more length for stoke rating addition
+        if (validatedSummary.length > summary.length * 2.0 || validatedSummary.length > 400) {
+            const fallbackResult = { 
                 validatedSummary: summary,
                 wasValidated: false,
                 fallback: true,
                 reason: 'AI response too different from original'
-            });
+            };
+            // Cache fallback result
+            setCachedResult(cacheKey, fallbackResult);
+            return res.status(200).json(fallbackResult);
         }
 
-        // console.log('[validate-summary] Returning validated summary:', validatedSummary);
-        res.status(200).json({ 
+        const result = { 
             validatedSummary: validatedSummary,
             wasValidated: true,
             originalLength: summary.length,
             validatedLength: validatedSummary.length
-        });
+        };
+        
+        // Cache the successful result
+        setCachedResult(cacheKey, result);
+        
+        res.status(200).json(result);
 
     } catch (error) {
-        // console.error('[validate-summary] Summary validation error:', error);
         // Always fallback to original summary on error
-        res.status(200).json({ 
+        const fallbackResult = { 
             validatedSummary: req.body.summary,
             wasValidated: false,
             fallback: true,
             error: error.message 
-        });
+        };
+        // Cache error result to avoid repeated failures
+        if (req.body.summary && req.body.surfData) {
+            const errorCacheKey = getCacheKey(req.body.summary, req.body.surfData);
+            setCachedResult(errorCacheKey, fallbackResult);
+        }
+        res.status(200).json(fallbackResult);
     }
 }

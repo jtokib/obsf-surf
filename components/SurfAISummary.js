@@ -78,7 +78,6 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
             predictionScore,
             predictionLoading
         });
-        console.log('[SurfAISummary] Computed summary:', summary);
         return {
             summary,
             quality: overallQuality.quality,

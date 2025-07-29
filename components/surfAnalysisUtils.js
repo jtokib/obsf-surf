@@ -185,6 +185,15 @@ export function analyzeSwell(height, period) {
 
 // Calculate overall surf quality with tide weighting and ML prediction
 export function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, predictionScore = null) {
+    // Convert string prediction to numeric score for calculations
+    let numericPrediction = null;
+    if (predictionScore === 'Good') {
+        numericPrediction = 8; // High score for good conditions
+    } else if (predictionScore === 'Bad') {
+        numericPrediction = 2; // Low score for bad conditions  
+    } else if (typeof predictionScore === 'number') {
+        numericPrediction = predictionScore; // Support legacy numeric scores
+    }
     if (windAnalysis.score <= 1 && !windAnalysis.isOffshore) {
         return {
             quality: 'terrible',
@@ -193,13 +202,14 @@ export function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysi
             score: 0.5,
             isFiring: false,
             hasMLPrediction: predictionScore !== null && predictionScore !== undefined,
+            mlPrediction: predictionScore,
             windOverride: true
         };
     }
     if (windAnalysis.score <= 2 && !windAnalysis.isOffshore) {
         let combinedScore = Math.min(2.5, (windAnalysis.score * 0.6 + swellAnalysis.score * 0.3 + tideAnalysis.score * 0.1));
-        if (predictionScore !== null && predictionScore !== undefined) {
-            const normalizedPrediction = Math.max(0, Math.min(2.5, predictionScore / 4));
+        if (numericPrediction !== null) {
+            const normalizedPrediction = Math.max(0, Math.min(2.5, numericPrediction / 4));
             combinedScore = Math.min(2.5, combinedScore * 0.8 + normalizedPrediction * 0.2);
         }
         let quality, emoji;
@@ -217,12 +227,13 @@ export function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysi
             score: combinedScore,
             isFiring: false,
             hasMLPrediction: predictionScore !== null && predictionScore !== undefined,
+            mlPrediction: predictionScore,
             windOverride: true
         };
     }
     let combinedScore = (windAnalysis.score * 0.4 + swellAnalysis.score * 0.4 + tideAnalysis.score * 0.2);
-    if (predictionScore !== null && predictionScore !== undefined) {
-        const normalizedPrediction = Math.max(0, Math.min(5, predictionScore / 2));
+    if (numericPrediction !== null) {
+        const normalizedPrediction = Math.max(0, Math.min(5, numericPrediction / 2));
         combinedScore = combinedScore * 0.7 + normalizedPrediction * 0.3;
     }
     let quality, emoji, confidence;
@@ -255,12 +266,11 @@ export function calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysi
         emoji = '💀';
         confidence = hasMLPrediction ? 2 : 1;
     }
-    return { quality, emoji, confidence, score: combinedScore, isFiring, hasMLPrediction };
+    return { quality, emoji, confidence, score: combinedScore, isFiring, hasMLPrediction, mlPrediction: predictionScore };
 }
 
 // Generate AI summary text
 export function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuality, data) {
-    console.log('[surfAnalysisUtils] generateSummary called', { windAnalysis, swellAnalysis, tideAnalysis, overallQuality, data });
     try {
         if (!windAnalysis || !swellAnalysis || !tideAnalysis || !overallQuality) {
             return 'Surf summary unavailable.';
@@ -275,10 +285,14 @@ export function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overa
         const firing = overallQuality.isFiring ? 'Conditions are FIRING! ' : '';
         const confidence = overallQuality.confidence ? `Confidence: ${overallQuality.confidence}/5.` : '';
 
-        // Optionally include prediction score if present
+        // Include ML prediction if present
         let prediction = '';
-        if (data && typeof data.predictionScore === 'number') {
-            prediction = `ML Prediction Score: ${data.predictionScore.toFixed(2)}. `;
+        if (data && data.predictionScore) {
+            if (typeof data.predictionScore === 'string') {
+                prediction = `ML Prediction: ${data.predictionScore}. `;
+            } else if (typeof data.predictionScore === 'number') {
+                prediction = `ML Prediction Score: ${data.predictionScore.toFixed(2)}. `;
+            }
         }
 
         // Add a tide recommendation if available
