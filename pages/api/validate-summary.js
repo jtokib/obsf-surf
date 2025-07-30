@@ -59,12 +59,10 @@ export default async function handler(req, res) {
         - Wind direction: ${surfData?.windDirection || 'N/A'}°
 
         Rules:
-        1. Keep the same emoji and overall tone/urgency
-        2. Fix any grammar issues or awkward phrasing
-        3. Ensure technical surf terms are used correctly
-        4. Keep it under 200 characters if possible
-        5. Maintain the surfer slang and personality
-        6. Provide a stoke rating from 1 to 10 based on the overall vibe of the summary
+        1. Recap the summary and conditions in haiku form
+        2. Maintain the surfer slang and culture
+        3. Maintain the surfer slang and personality
+        4. Provide a stoke rating from 1 to 10 based on the overall vibe of the summary
 
         Return ONLY the improved summary text, no explanations.`;
 
@@ -93,7 +91,7 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a professional surf report editor who ensures surf summaries are grammatically correct and readable while maintaining their authentic surf culture voice.'
+                        content: 'You are a grumpy surf report editor who ensures surf summaries are grammatically correct and readable while maintaining their authentic surf culture voice, but you\'re also really into crystals and vibes. Make sure to provide a stoke rating and recommend a crystal of the day based on the summary vibe.'
                     },
                     {
                         role: 'user', 

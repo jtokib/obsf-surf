@@ -79,3 +79,6 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - Optional OpenAI integration (graceful degradation without API key)
 - Wind conditions properly override good swell/tide when >12kts onshore
 - All API endpoints have robust error handling and fallbacks
+
+### Git Configuration
+- Remote is named dev main not origin master
