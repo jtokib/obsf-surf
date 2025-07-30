@@ -7,7 +7,7 @@ export function analyzeWind(direction, speed) {
         return {
             quality: 'excellent',
             description: 'offshore',
-            text: `${speed}kts ${directionText} (offshore)`,
+            text: `${speed}kts ${directionText} offshore`,
             score: speed < 25 ? 5 : 3,
             isOffshore: true
         };
@@ -15,48 +15,48 @@ export function analyzeWind(direction, speed) {
     if (speed <= 3) {
         return {
             quality: 'excellent',
-            description: 'glassy',
-            text: `${speed}kts ${directionText} (glassy)`,
+            description: 'light',
+            text: `${speed}kts ${directionText}`,
             score: 5,
             isOffshore: false
         };
     } else if (speed <= 5) {
         return {
             quality: 'good',
-            description: 'light wind',
-            text: `${speed}kts ${directionText} (light wind)`,
+            description: 'light',
+            text: `${speed}kts ${directionText}`,
             score: 4,
             isOffshore: false
         };
     } else if (speed <= 8) {
         return {
             quality: 'fair',
-            description: 'windy',
-            text: `${speed}kts ${directionText} (windy)`,
+            description: 'moderate',
+            text: `${speed}kts ${directionText}`,
             score: 2.5,
             isOffshore: false
         };
     } else if (speed <= 12) {
         return {
             quality: 'poor',
-            description: 'very windy',
-            text: `${speed}kts ${directionText} (very windy)`,
+            description: 'strong',
+            text: `${speed}kts ${directionText}`,
             score: 2,
             isOffshore: false
         };
     } else if (speed <= 18) {
         return {
             quality: 'poor',
-            description: 'not surfable',
-            text: `${speed}kts ${directionText} (too windy)`,
+            description: 'very strong',
+            text: `${speed}kts ${directionText}`,
             score: 1,
             isOffshore: false
         };
     } else {
         return {
             quality: 'dangerous',
-            description: 'victory at sea',
-            text: `${speed}kts ${directionText} (victory at sea!)`,
+            description: 'extreme',
+            text: `${speed}kts ${directionText}`,
             score: 0,
             isOffshore: false
         };
@@ -115,13 +115,11 @@ export function analyzeTide(tideData) {
     if (isDropping) {
         score = 4.5;
         quality = 'excellent';
-        const dropPhrases = ['dropping (dialed!)', 'dropping (money time!)', 'dropping (green light!)', 'dropping (go time!)', 'dropping (optimal!)'];
-        description = dropPhrases[Math.floor(Math.random() * dropPhrases.length)];
+        description = 'dropping';
     } else if (currentTideDirection === 'rising') {
         score = 2;
         quality = 'fair';
-        const risingPhrases = ['rising (patience pays)', 'rising (almost there)', 'rising (hold tight)', 'rising (wait for it)', 'rising (building up)'];
-        description = risingPhrases[Math.floor(Math.random() * risingPhrases.length)];
+        description = 'rising';
     } else {
         score = 2.5;
         quality = 'unknown';
@@ -143,40 +141,40 @@ export function analyzeSwell(height, period) {
     if (height >= 5 && period >= 15) {
         return {
             quality: 'excellent',
-            description: 'long period swell',
-            text: `${height}ft @ ${period}s (long period swell)`,
+            description: 'long period',
+            text: `${height}ft @ ${period}s`,
             score: 5,
             type: 'long-period'
         };
     } else if (height < 5 && period >= 15) {
         return {
             quality: 'good',
-            description: 'small but good',
-            text: `${height}ft @ ${period}s (small but good quality)`,
+            description: 'small',
+            text: `${height}ft @ ${period}s`,
             score: 4,
             type: 'small-good'
         };
     } else if (height >= 5 && period < 12) {
         return {
             quality: 'fair',
-            description: 'windswell',
-            text: `${height}ft @ ${period}s (windswell)`,
+            description: 'short period',
+            text: `${height}ft @ ${period}s`,
             score: 2,
             type: 'windswell'
         };
     } else if (period >= 12 && period < 15) {
         return {
             quality: 'fair',
-            description: 'mid-period swell',
-            text: `${height}ft @ ${period}s (mid-period)`,
+            description: 'mid period',
+            text: `${height}ft @ ${period}s`,
             score: 3,
             type: 'mid-period'
         };
     } else {
         return {
             quality: 'poor',
-            description: 'small and short period',
-            text: `${height}ft @ ${period}s (small & choppy)`,
+            description: 'small',
+            text: `${height}ft @ ${period}s`,
             score: 1,
             type: 'poor'
         };
@@ -282,7 +280,7 @@ export function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overa
         const tide = tideAnalysis.text || '';
         const quality = overallQuality.quality || '';
         const emoji = overallQuality.emoji || '';
-        const firing = overallQuality.isFiring ? 'Conditions are FIRING! ' : '';
+        const firing = '';
         const confidence = overallQuality.confidence ? `Confidence: ${overallQuality.confidence}/5.` : '';
 
         // Include ML prediction if present
@@ -295,43 +293,18 @@ export function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overa
             }
         }
 
-        // Add a tide recommendation if available
-        let tideRec = '';
-        if (typeof getTideRecommendation === 'function') {
-            tideRec = getTideRecommendation(tideAnalysis, windAnalysis, swellAnalysis);
-        }
+        // Remove tide recommendations from summary
 
-        return `${emoji} ${firing}Surf is ${quality}. ${swell} | ${wind} | ${tide}. ${prediction}${confidence} ${tideRec}`.replace(/\s+/g, ' ').trim();
+        return `${emoji} Surf quality: ${quality}. ${swell} | ${wind} | ${tide}. ${prediction}${confidence}`.replace(/\s+/g, ' ').trim();
     } catch (err) {
         console.error('[surfAnalysisUtils] generateSummary error:', err);
         return 'Surf summary unavailable.';
     }
 }
 
-// Generate tide-specific recommendations
+// Generate tide-specific recommendations (deprecated - personality removed)
 export function getTideRecommendation(tideAnalysis, windAnalysis, swellAnalysis) {
-    if (tideAnalysis.direction === 'unknown') {
-        return 'Monitor tide changes for optimal timing.';
-    }
-    if (tideAnalysis.isDropping) {
-        const perfectTimingPhrases = [
-            'Perfect timing - conditions are dialed!',
-            'Stellar timing - everything aligned!',
-            'Money timing - window is open!',
-            'Prime conditions - go time!',
-            'Perfect window - conditions are firing!'
-        ];
-        return perfectTimingPhrases[Math.floor(Math.random() * perfectTimingPhrases.length)];
-    }
-    if (tideAnalysis.direction === 'rising' && tideAnalysis.nextHighTide && tideAnalysis.timeToNextHigh) {
-        const nextHighTime = tideAnalysis.nextHighTide.t.split(' ')[1];
-        if (windAnalysis.score >= 3.5 && swellAnalysis.score >= 3.5) {
-            return `Consider waiting - tide turns at ${nextHighTime} (in ${tideAnalysis.timeToNextHigh}).`;
-        } else {
-            return `Tide rising (turns at ${nextHighTime}) - better surf after the turn.`;
-        }
-    }
-    return 'Check tide timing for optimal conditions.';
+    return ''; // No recommendations in factual summary
 }
 
 // Helper function to get wind direction text
