@@ -133,14 +133,15 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
         >
+            {/* CONDITIONS SUMMARY Section */}
             <motion.div
                 className={`ai-summary-content ${surfAnalysis.quality}`}
                 whileHover={{ scale: 1.01 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
-                <div className="ai-header">
+                <div className="conditions-summary-header">
                     <span className="ai-emoji">{surfAnalysis.emoji}</span>
-                    <span className="ai-label">🤖 SURF AI</span>
+                    <span className="ai-label">CONDITIONS SUMMARY</span>
                     <span className="confidence-indicator">
                         {Array.from({ length: 5 }, (_, i) => (
                             <span
@@ -151,6 +152,22 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
                             </span>
                         ))}
                     </span>
+                </div>
+                <div className="ai-summary-text">
+                    {surfAnalysis.summary}
+                </div>
+            </motion.div>
+
+            {/* SURF AI Section */}
+            <motion.div
+                className="surf-ai-content"
+                whileHover={{ scale: 1.01 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4, hover: { type: "spring", stiffness: 400, damping: 25 } }}
+            >
+                <div className="surf-ai-header">
+                    <span className="ai-label">🤖 SURF AI</span>
                 </div>
                 <div className="ai-summary-text">
                     {summaryValidating ? `${displaySummary} ✨` : displaySummary}

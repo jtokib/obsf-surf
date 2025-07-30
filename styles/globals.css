@@ -630,6 +630,65 @@ a:hover {
     color: var(--text-primary);
 }
 
+/* CONDITIONS SUMMARY Section */
+.conditions-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-primary);
+}
+
+/* SURF AI Section */
+.surf-ai-content {
+    background: var(--surface-elevated);
+    border: 2px solid var(--accent-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-medium);
+    margin-top: 1rem;
+}
+
+.surf-ai-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-secondary);
+}
+
+/* Confidence Indicator */
+.confidence-indicator {
+    display: flex;
+    gap: 0.25rem;
+    margin-left: auto;
+}
+
+.confidence-dot {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: all 0.3s ease;
+}
+
+.confidence-dot.active {
+    color: var(--accent-primary);
+    text-shadow: 0 0 8px var(--accent-primary);
+}
+
 /* Magic 8 Ball */
 .magic-button {
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
