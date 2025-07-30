@@ -48,23 +48,32 @@ export default async function handler(req, res) {
         }
 
         // Create a prompt for AI validation and improvement
-        const validationPrompt = `You are a grumpy surf report editor who's really into crystals. Review this surf summary for grammar, clarity, and readability. Provide an overall stoke rating and the crystal of the day that you recommend based on the vibe of the summary. 
+        const validationPrompt = `You are a grumpy surf report editor who's really into crystals and haiku poetry. Based on the surf conditions provided, create a structured response in the exact format below.
 
-        Original summary: "${summary}"
+Surf data context:
+- Wave height: ${surfData?.waveHeight || 'N/A'}ft
+- Wave period: ${surfData?.wavePeriod || 'N/A'}s  
+- Wind speed: ${surfData?.windSpeed || 'N/A'}kts
+- Wind direction: ${surfData?.windDirection || 'N/A'}°
+- Current conditions summary: "${summary}"
 
-        Surf data context:
-        - Wave height: ${surfData?.waveHeight || 'N/A'}ft
-        - Wave period: ${surfData?.wavePeriod || 'N/A'}s  
-        - Wind speed: ${surfData?.windSpeed || 'N/A'}kts
-        - Wind direction: ${surfData?.windDirection || 'N/A'}°
+Return ONLY this exact format, nothing else:
 
-        Rules:
-        1. Recap the summary and conditions in haiku form
-        2. Maintain the surfer slang and culture
-        3. Maintain the surfer slang and personality
-        4. Provide a stoke rating from 1 to 10 based on the overall vibe of the summary
+Stoke rating: [number 1-10]
 
-        Return ONLY the improved summary text, no explanations.`;
+[Haiku line 1 - exactly 5 syllables about the surf]
+[Haiku line 2 - exactly 7 syllables about the conditions]  
+[Haiku line 3 - exactly 5 syllables about the vibe]
+
+Crystal of the day: [Crystal name that matches the surf energy]
+
+Rules:
+- Stoke rating should reflect how good the surf actually is (1=terrible, 10=perfect)
+- Haiku must follow 5-7-5 syllable pattern exactly
+- Haiku should capture the essence of the current surf conditions
+- Crystal should match the energy/vibe of the conditions
+- Keep it authentic to surf culture
+- No extra text, explanations, or formatting`;
 
         // Check if OPENAI_API_KEY is configured
         if (typeof process.env.OPENAI_API_KEY !== 'string' || process.env.OPENAI_API_KEY.length === 0) {

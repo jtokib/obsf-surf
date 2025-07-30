@@ -789,3 +789,23 @@ a:hover {
         padding: 2rem 0;
     }
 }
+
+/* Haiku formatting for AI summaries */
+.surf-ai-text {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--text-primary);
+    white-space: pre-line; /* Preserves line breaks */
+}
+
+.surf-ai-text .stoke-rating {
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+.surf-ai-text .crystal-recommendation {
+    font-weight: 700;
+    color: var(--accent-secondary);
+}
