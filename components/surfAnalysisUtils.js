@@ -285,11 +285,14 @@ export function generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overa
 
         // Include ML prediction if present
         let prediction = '';
-        if (data && data.predictionScore) {
-            if (typeof data.predictionScore === 'string') {
-                prediction = `ML Prediction: ${data.predictionScore}. `;
+        if (data && data.predictionScore !== null && data.predictionScore !== undefined) {
+            if (data.predictionScore === 1 || data.predictionScore === 'Good') {
+                prediction = '🏄‍♂️ Go surfing! ';
+            } else if (data.predictionScore === 0 || data.predictionScore === 'Bad') {
+                prediction = '🚫 Don\'t go surfing. ';
             } else if (typeof data.predictionScore === 'number') {
-                prediction = `ML Prediction Score: ${data.predictionScore.toFixed(2)}. `;
+                // Legacy numeric score handling
+                prediction = data.predictionScore >= 0.5 ? '🏄‍♂️ Go surfing! ' : '🚫 Don\'t go surfing. ';
             }
         }
 

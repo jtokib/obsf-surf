@@ -14,6 +14,56 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
     const [predictionLoading, setPredictionLoading] = useState(false);
     const [validatedSummary, setValidatedSummary] = useState(null);
     const [summaryValidating, setSummaryValidating] = useState(false);
+    const [validationTimeout, setValidationTimeout] = useState(false);
+
+    // Function to parse and format AI summary into separate elements
+    const formatAISummary = (summary) => {
+        if (!summary) return null;
+
+        // Check if this is the formatted AI summary with stoke rating, haiku, and crystal
+        const stokeMatch = summary.match(/Stoke rating:\s*(\d+(?:\/10)?)/i);
+        const haikuMatch = summary.match(/\n([^\n]+)\n([^\n]+)\n([^\n]+)\n/);
+        const crystalMatch = summary.match(/Crystal of the day:\s*(.+)/i);
+
+        if (stokeMatch || crystalMatch) {
+            const elements = [];
+
+            // Extract stoke rating
+            if (stokeMatch) {
+                elements.push(
+                    <p key="stoke" className="stoke-rating">
+                        🔥 Stoke Rating: {stokeMatch[1]}
+                    </p>
+                );
+            }
+
+            // Extract haiku
+            if (haikuMatch) {
+                elements.push(
+                    <p key="haiku" className="surf-haiku">
+                        🎋 Surf Haiku:<br/>
+                        {haikuMatch[1]}<br/>
+                        {haikuMatch[2]}<br/>
+                        {haikuMatch[3]}
+                    </p>
+                );
+            }
+
+            // Extract crystal
+            if (crystalMatch) {
+                elements.push(
+                    <p key="crystal" className="crystal-recommendation">
+                        💎 Crystal of the Day: {crystalMatch[1]}
+                    </p>
+                );
+            }
+
+            return elements.length > 0 ? elements : <div className="ai-summary-text">{summary}</div>;
+        }
+
+        // Return original summary if not in expected format
+        return <div className="ai-summary-text">{summary}</div>;
+    };
 
 
 
@@ -95,6 +145,8 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
 
     // Prevent infinite validation loop by tracking last validated summary
     const lastValidatedSummary = useRef(null);
+    const validationTimeoutRef = useRef(null);
+    
     useEffect(() => {
         // Always validate the summary, even if prediction failed (score is null)
         if (
@@ -104,7 +156,16 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
             surfAnalysis.summary !== lastValidatedSummary.current
         ) {
             setSummaryValidating(true);
+            setValidationTimeout(false);
             lastValidatedSummary.current = surfAnalysis.summary;
+            
+            // Set timeout for validation
+            validationTimeoutRef.current = setTimeout(() => {
+                setValidationTimeout(true);
+                setSummaryValidating(false);
+                setValidatedSummary("bad juju today. can't see the surf");
+            }, 10000); // 10 second timeout
+            
             const surfData = {
                 waveHeight: parseFloat(buoyData?.Hs) || 0,
                 wavePeriod: parseFloat(buoyData?.Tp) || 0,
@@ -113,14 +174,27 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
             };
             validateSummary(surfAnalysis.summary, surfData)
                 .then(result => {
-                    setValidatedSummary(result.validatedSummary);
-                    setSummaryValidating(false);
+                    if (validationTimeoutRef.current) {
+                        clearTimeout(validationTimeoutRef.current);
+                        setValidatedSummary(result.validatedSummary);
+                        setSummaryValidating(false);
+                    }
                 })
                 .catch(() => {
-                    setValidatedSummary(surfAnalysis.summary);
-                    setSummaryValidating(false);
+                    if (validationTimeoutRef.current) {
+                        clearTimeout(validationTimeoutRef.current);
+                        setValidationTimeout(true);
+                        setValidatedSummary("bad juju today. can't see the surf");
+                        setSummaryValidating(false);
+                    }
                 });
         }
+        
+        return () => {
+            if (validationTimeoutRef.current) {
+                clearTimeout(validationTimeoutRef.current);
+            }
+        };
     }, [surfAnalysis.summary, loading, summaryValidating, buoyData, windData]);
 
     // Use validated summary if available, otherwise use original
@@ -170,7 +244,10 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
                     <span className="ai-label">🤖 SURF AI</span>
                 </div>
                 <div className="ai-summary-text">
-                    {summaryValidating ? `${displaySummary} ✨` : displaySummary}
+                    {summaryValidating 
+                        ? <div className="spinner">🌊 Loading surf wisdom...</div>
+                        : formatAISummary(displaySummary) || displaySummary
+                    }
                 </div>
             </motion.div>
         </motion.div>

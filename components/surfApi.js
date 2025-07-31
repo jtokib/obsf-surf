@@ -34,7 +34,14 @@ export async function getPrediction(surfConditions) {
             return null;
         }
         const data = await response.json();
-        return data.predicted_score;
+        // Handle both old format (predicted_score) and new format (prediction: 'Good'/'Bad')
+        if (data.predicted_score !== undefined) {
+            return data.predicted_score;
+        } else if (data.prediction) {
+            // Convert 'Good'/'Bad' to numeric score (Good = 1, Bad = 0)
+            return data.prediction === 'Good' ? 1 : 0;
+        }
+        return null;
     } catch (error) {
         console.error('Error getting prediction:', error);
         return null;
