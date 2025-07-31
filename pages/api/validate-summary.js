@@ -166,12 +166,13 @@ Rules:
         res.status(200).json(result);
 
     } catch (error) {
+        console.error('Validation API error:', error.message);
         // Always fallback to original summary on error
         const fallbackResult = { 
             validatedSummary: req.body.summary,
             wasValidated: false,
             fallback: true,
-            error: error.message 
+            error: 'Validation service temporarily unavailable'
         };
         // Cache error result to avoid repeated failures
         if (req.body.summary && req.body.surfData) {

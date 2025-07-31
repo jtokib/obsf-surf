@@ -5,7 +5,7 @@
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",
-            "value": "*"
+            "value": "https://obsuf.surf, https://www.obsuf.surf, http://localhost:3000, http://localhost:3004"
           },
           {
             "key": "Access-Control-Allow-Methods", 
