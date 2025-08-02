@@ -10,15 +10,15 @@ export default function SurfConditions() {
     const [windData, setWindData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [windLoading, setWindLoading] = useState(true);
+    const [tideLoading, setTideLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('nowcast');
-    const [magic8Result, setMagic8Result] = useState('');
-    const [magic8Loading, setMagic8Loading] = useState(false);
+    const [currentTide, setCurrentTide] = useState(null);
 
     useEffect(() => {
         fetchBuoyData();
         fetchTideData();
         fetchWindData();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchBuoyData = async () => {
         try {
@@ -44,8 +44,16 @@ export default function SurfConditions() {
             const response = await fetch('/api/tide');
             const data = await response.json();
             setTideData(data);
+            
+            // Calculate current tide state
+            if (data?.predictions && Array.isArray(data.predictions)) {
+                const currentTideState = calculateCurrentTideState(data.predictions);
+                setCurrentTide(currentTideState);
+            }
         } catch (error) {
             console.error('Error fetching tide data:', error);
+        } finally {
+            setTideLoading(false);
         }
     };
 
@@ -61,22 +69,44 @@ export default function SurfConditions() {
         }
     };
 
-    const handleMagic8Ball = async () => {
-        setMagic8Loading(true);
-
-        // Add some suspense with retro loading animation
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        try {
-            const response = await fetch('/api/magic8ball', { method: 'POST' });
-            const data = await response.json();
-            setMagic8Result(data.answer);
-        } catch (error) {
-            console.error('Error with magic 8 ball:', error);
-            setMagic8Result('System Error! Try again, kook!');
-        } finally {
-            setMagic8Loading(false);
+    const calculateCurrentTideState = (predictions) => {
+        if (!predictions || !Array.isArray(predictions)) return null;
+        
+        const now = new Date();
+        const currentTime = now.getTime();
+        
+        // Find the most recent past tide and next future tide
+        let pastTide = null;
+        let futureTide = null;
+        
+        for (const prediction of predictions) {
+            const tideTime = new Date(`${prediction.t} PDT`).getTime();
+            
+            if (tideTime <= currentTime) {
+                pastTide = { ...prediction, time: tideTime };
+            } else if (tideTime > currentTime && !futureTide) {
+                futureTide = { ...prediction, time: tideTime };
+                break;
+            }
         }
+        
+        if (!pastTide || !futureTide) return null;
+        
+        // Calculate current height by interpolating between past and future tides
+        const timeDiff = futureTide.time - pastTide.time;
+        const timeProgress = (currentTime - pastTide.time) / timeDiff;
+        const heightDiff = parseFloat(futureTide.v) - parseFloat(pastTide.v);
+        const currentHeight = parseFloat(pastTide.v) + (heightDiff * timeProgress);
+        
+        // Determine if tide is rising or falling
+        const isRising = parseFloat(futureTide.v) > parseFloat(pastTide.v);
+        
+        return {
+            height: currentHeight.toFixed(1),
+            direction: isRising ? 'rising' : 'falling',
+            arrow: isRising ? '↗️' : '↘️',
+            status: isRising ? 'Rising' : 'Falling'
+        };
     };
 
 
@@ -128,6 +158,16 @@ export default function SurfConditions() {
         }
     };
 
+    // Surf-themed loading spinner component
+    const SurfSpinner = ({ text = "Loading..." }) => (
+        <div className="surf-loading-container">
+            <div className="surf-spinner">
+                <div className="wave-animation">🌊</div>
+            </div>
+            <p className="loading-text">{text}</p>
+        </div>
+    );
+
     return (
         <motion.div
             className="surf-conditions"
@@ -144,19 +184,14 @@ export default function SurfConditions() {
                 buoyData={buoyData} 
                 windData={windData} 
                 tideData={tideData}
-                loading={loading || windLoading} 
+                loading={loading || windLoading || tideLoading} 
             />
 
             <motion.div className="conditions-summary" variants={itemVariants}>
                 <motion.div className="condition-item" whileHover={{ scale: 1.05 }}>
                     <h3>🌊 SF Buoy</h3>
                     {loading ? (
-                        <div className="loading-container">
-                            <div className="loading-bar">
-                                <div className="loading-indicator"></div>
-                            </div>
-                            <p>Loading wave data...</p>
-                        </div>
+                        <SurfSpinner text="Loading wave data..." />
                     ) : buoyData ? (
                         <>
                             <div className="wave-data">
@@ -183,12 +218,7 @@ export default function SurfConditions() {
                 <motion.div className="condition-item" whileHover={{ scale: 1.05 }}>
                     <h3>💨 Wind</h3>
                     {windLoading ? (
-                        <div className="loading-container">
-                            <div className="loading-bar">
-                                <div className="loading-indicator"></div>
-                            </div>
-                            <p>Loading wind data...</p>
-                        </div>
+                        <SurfSpinner text="Loading wind data..." />
                     ) : windData ? (
                         <div className="wind-data">
                             <div className="wind-speed" style={{
@@ -221,50 +251,38 @@ export default function SurfConditions() {
                 </motion.div>
 
                 <motion.div className="condition-item" whileHover={{ scale: 1.05 }}>
-                    <h3>🎱 Go Surf?</h3>
-                    <AnimatePresence mode="wait">
-                        {magic8Loading ? (
-                            <motion.div
-                                key="loading"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="magic-loading"
-                            >
-                                <div className="magic-ball-loading">
-                                    <div className="ball-animation"></div>
-                                </div>
-                                <p>Consulting the ocean spirits...</p>
-                            </motion.div>
-                        ) : !magic8Result ? (
-                            <motion.button
-                                key="button"
-                                onClick={handleMagic8Ball}
-                                className="magic-button"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                            >
-                                🎱 Magic 8 Ball
-                            </motion.button>
-                        ) : (
-                            <motion.div
-                                key="result"
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                className="magic-result-container"
-                            >
-                                <div className="magic-result">{magic8Result}</div>
-                                <button
-                                    onClick={() => setMagic8Result('')}
-                                    className="ask-again-button"
-                                >
-                                    Ask Again?
-                                </button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    <h3>🌊 Tide Status</h3>
+                    {tideLoading ? (
+                        <SurfSpinner text="Loading tide data..." />
+                    ) : currentTide ? (
+                        <div className="tide-data">
+                            <div className="tide-height" style={{
+                                fontFamily: 'var(--font-display)',
+                                fontSize: '1.8rem',
+                                fontWeight: '700',
+                                color: 'var(--accent-primary)',
+                                textShadow: '0 0 10px var(--accent-primary)'
+                            }}>
+                                {currentTide.arrow} {currentTide.height} ft
+                            </div>
+                            <div className="tide-direction" style={{
+                                fontSize: '1rem',
+                                color: 'var(--text-color)',
+                                opacity: '0.8',
+                                fontWeight: '500'
+                            }}>
+                                {currentTide.status}
+                            </div>
+                            <div className="tide-quality">
+                                🌙 Current Tide
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="error-state">
+                            <h3>⚠️ Tide Data Offline</h3>
+                            <p>Check tides tab for schedule</p>
+                        </div>
+                    )}
                 </motion.div>
             </motion.div>
 

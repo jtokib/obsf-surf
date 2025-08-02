@@ -25,7 +25,7 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 
 ### Key Components
 - **Layout.js**: Main layout wrapper with dark/light mode toggle (defaults to dark), easter eggs, and footer
-- **SurfConditions.js**: Main surf data dashboard with tabbed interface for buoy data, winds, tides
+- **SurfConditions.js**: Main surf data dashboard with tabbed interface for buoy data, winds, tides, and real-time tide status with current height/direction
 - **SurfAISummary.js**: Advanced AI-powered surf analysis with BigQuery ML predictions, wind-weighted conditions, and AI validation
 - **HeroSection.js**: Hero section with full-width ocean background image
 - **TideTable.js**: Interactive tide schedule with chart and clean data rows
@@ -34,10 +34,9 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 ### API Endpoints
 - `/api/buoy` - SF Bar Buoy wave data (cleaned up console logging)
 - `/api/wind` - Wind conditions with multiple fallback sources
-- `/api/tide` - Tide predictions with comprehensive analysis
+- `/api/tide` - Tide predictions with comprehensive analysis and real-time current state calculation
 - `/api/predict` - BigQuery ML surf score predictions via Google Cloud Function (enhanced error handling)
 - `/api/validate-summary` - AI-powered summary validation and improvement using OpenAI
-- `/api/magic8ball` - Random surf advice with ML integration
 - `/api/sitemap` - Dynamic sitemap generation
 - `/api/robots` - Robots.txt generation
 
@@ -53,14 +52,16 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - **Wind-Weighted AI Analysis**: Intelligent surf assessment that properly weights wind conditions as the primary limiting factor
 - **AI Summary Validation**: Optional OpenAI integration to ensure all summaries are grammatically correct and human-readable
 - **BigQuery ML Integration**: Real-time surf score predictions with confidence ratings
+- **Real-Time Tide Status**: Live current tide height and direction (rising/falling) with interpolated calculations
 - **Comprehensive Tide Analysis**: Advanced tide timing recommendations with optimal session windows
+- **Surf-Themed Loading Animations**: Custom wave bounce spinners for enhanced user experience
 - **Smart Content Overlap**: Hero image with overlapping content for better space utilization
 - **Clean Card Design**: Simplified UI with borders/shadows only where they add value
 - **Dark Mode Default**: Automatically defaults to dark theme for better surf aesthetic
 - **Interactive Tide Tables**: Visual charts combined with organized data rows
 - **Centered Image Display**: Properly centered buoy and nowcast images
 - **Clean Error Handling**: Graceful fallbacks for all API failures
-- **Responsive Design**: Mobile-first approach with optimized layouts
+- **Responsive Design**: Mobile-first approach with optimized layouts and improved mobile formatting
 - **Easter Eggs**: Secret keyboard sequence "saki" triggers love message
 - **Framer Motion**: Smooth animations and micro-interactions
 
