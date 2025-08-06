@@ -4,9 +4,12 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Access CDIP station 142 spectral parameters (sp) data using justdar API
-        // This should return recent wave height, period, and direction data
-        const apiUrl = `https://cdip.ucsd.edu/data_access/justdar.cdip?142+sp`;
+        // Get station parameter - default to 142 (SF Bar Buoy), 029 is Pt Reyes
+        const station = req.query.station || '142';
+        
+        // Access CDIP station spectral parameters (sp) data using justdar API
+        // Station 142: SF Bar Buoy, Station 029: Pt Reyes
+        const apiUrl = `https://cdip.ucsd.edu/data_access/justdar.cdip?${station}+sp`;
         
         
         const response = await fetch(
@@ -49,7 +52,13 @@ export default async function handler(req, res) {
 
             return res.status(200).json(formattedData);
         } else {
-            throw new Error('Invalid text data format from CDIP - could not parse wave parameters');
+            // Check if response is completely empty (buoy offline) vs malformed data
+            const isEmptyResponse = !textData || textData.trim() === '';
+            const errorMessage = isEmptyResponse 
+                ? 'Buoy temporarily offline or under maintenance'
+                : 'Invalid text data format from CDIP - could not parse wave parameters';
+                
+            throw new Error(errorMessage);
         }
     } catch (error) {
         console.error('Buoy API error:', error);

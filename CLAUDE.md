@@ -49,9 +49,13 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - Various oceanographic APIs for real-time conditions
 
 ### Special Features
+- **Consolidated AI Summary**: Single unified section combining ML predictions with personality elements (stoke rating, haiku, crystal recommendations)
+- **Smart Recommendation Badges**: Clear "Go Surf!" or "Skip Surfing!" badges with confidence percentages
+- **Fallback Surf Prediction Logic**: Local surf analysis when Cloud Function fails, using real surf science principles
+- **Pt Reyes Buoy Support**: Handles offline buoy scenarios gracefully with "Maintenance Mode" display
 - **Wind-Weighted AI Analysis**: Intelligent surf assessment that properly weights wind conditions as the primary limiting factor
 - **AI Summary Validation**: Optional OpenAI integration to ensure all summaries are grammatically correct and human-readable
-- **BigQuery ML Integration**: Real-time surf score predictions with confidence ratings
+- **BigQuery ML Integration**: Real-time surf score predictions with confidence ratings (with fallback when broken)
 - **Real-Time Tide Status**: Live current tide height and direction (rising/falling) with interpolated calculations
 - **Comprehensive Tide Analysis**: Advanced tide timing recommendations with optimal session windows
 - **Surf-Themed Loading Animations**: Custom wave bounce spinners for enhanced user experience
@@ -80,6 +84,10 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - Optional OpenAI integration (graceful degradation without API key)
 - Wind conditions properly override good swell/tide when >12kts onshore
 - All API endpoints have robust error handling and fallbacks
+- **Surf Prediction Fallback**: Local prediction logic compensates for broken Cloud Function
+- **Consolidated UI**: Removed redundant AI summary sections for better UX
+- **Buoy Station Support**: Multi-station buoy API with offline handling
+- **External Documentation**: Prompts folder contains fixes for external project issues
 
 ### Git Configuration
 - Remote is named dev main not origin master

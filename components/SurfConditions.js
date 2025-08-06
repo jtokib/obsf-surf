@@ -8,17 +8,28 @@ export default function SurfConditions() {
     const [buoyData, setBuoyData] = useState(null);
     const [tideData, setTideData] = useState(null);
     const [windData, setWindData] = useState(null);
+    const [surfPrediction, setSurfPrediction] = useState(null);
     const [loading, setLoading] = useState(true);
     const [windLoading, setWindLoading] = useState(true);
     const [tideLoading, setTideLoading] = useState(true);
+    const [predictionLoading, setPredictionLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('nowcast');
     const [currentTide, setCurrentTide] = useState(null);
+    const [ptReyesBuoyData, setPtReyesBuoyData] = useState(null);
 
     useEffect(() => {
         fetchBuoyData();
+        fetchPtReyesBuoyData();
         fetchTideData();
         fetchWindData();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Fetch surf prediction when all real-time data is available
+    useEffect(() => {
+        if (buoyData && windData && tideData && !loading && !windLoading && !tideLoading) {
+            fetchSurfPrediction();
+        }
+    }, [buoyData, windData, tideData, loading, windLoading, tideLoading]);
 
     const fetchBuoyData = async () => {
         try {
@@ -36,6 +47,21 @@ export default function SurfConditions() {
             setBuoyData(null);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchPtReyesBuoyData = async () => {
+        try {
+            const response = await fetch('/api/buoy?station=029');
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                setPtReyesBuoyData(null);
+            } else {
+                setPtReyesBuoyData(data);
+            }
+        } catch (error) {
+            console.error('Error fetching Pt. Reyes buoy data:', error);
+            setPtReyesBuoyData(null);
         }
     };
 
@@ -66,6 +92,89 @@ export default function SurfConditions() {
             console.error('Error fetching wind data:', error);
         } finally {
             setWindLoading(false);
+        }
+    };
+
+    const fetchSurfPrediction = async () => {
+        try {
+            // Wait for all real-time data to be available
+            if (!buoyData || !windData || !tideData) {
+                return; // Don't fetch prediction until we have all data
+            }
+
+            // Format conditions for the API
+            const waveHeight = parseFloat(buoyData.Hs) || 0;
+            const wavePeriod = parseFloat(buoyData.Tp) || 0;
+            const waveDirection = parseInt(buoyData.Dp) || 0;
+            const windSpeed = parseFloat(windData.speed) || 0;
+            const windDirection = windData.direction || 0;
+            // Pt. Reyes
+            const ptReyesHeight = ptReyesBuoyData ? parseFloat(ptReyesBuoyData.Hs) || 0 : null;
+            const ptReyesPeriod = ptReyesBuoyData ? parseFloat(ptReyesBuoyData.Tp) || 0 : null;
+            const ptReyesDirection = ptReyesBuoyData ? parseInt(ptReyesBuoyData.Dp) || 0 : null;
+
+            // Determine wind category
+            let windCategory = 'unknown';
+            if (windSpeed < 5) windCategory = 'offshore';
+            else if (windSpeed < 10) windCategory = 'light';
+            else if (windSpeed < 15) windCategory = 'moderate';
+            else windCategory = 'onshore';
+
+            // Determine size category
+            let sizeCategory = 'unknown';
+            const waveHeightFt = waveHeight * 3.281;
+            if (waveHeightFt < 2) sizeCategory = 'ankle_high';
+            else if (waveHeightFt < 4) sizeCategory = 'knee_high';
+            else if (waveHeightFt < 6) sizeCategory = 'head_high';
+            else sizeCategory = 'overhead';
+
+            // Determine tide category
+            let tideCategory = 'unknown';
+            if (currentTide) {
+                if (currentTide.direction === 'rising') {
+                    tideCategory = 'mid_flood';
+                } else {
+                    tideCategory = 'mid_ebb';
+                }
+            }
+
+            // Build conditions object
+            const conditions = {
+                sf_bar_height: waveHeight.toFixed(1),
+                sf_bar_period: wavePeriod,
+                sf_bar_direction: waveDirection,
+                wind_category: windCategory,
+                size_category: sizeCategory,
+                tide_category: tideCategory
+            };
+            if (ptReyesBuoyData) {
+                conditions.pt_reyes_height = ptReyesHeight?.toFixed(1);
+                conditions.pt_reyes_period = ptReyesPeriod;
+                conditions.pt_reyes_direction = ptReyesDirection;
+            }
+
+            console.log('Sending surf prediction conditions:', conditions);
+
+            const response = await fetch('/api/surf-predictor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(conditions)
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok || data.error) {
+                setSurfPrediction(null);
+            } else {
+                setSurfPrediction(data);
+            }
+        } catch (error) {
+            console.error('Error fetching surf prediction:', error);
+            setSurfPrediction(null);
+        } finally {
+            setPredictionLoading(false);
         }
     };
 
@@ -128,6 +237,22 @@ export default function SurfConditions() {
         return { emoji: '⚡', status: 'Howling!', color: 'var(--coral-pink)' };
     };
 
+    const getConfidenceColor = (confidence) => {
+        if (confidence >= 0.7) return 'var(--electric-green)';
+        if (confidence >= 0.4) return 'var(--sunset-orange)';
+        return 'var(--coral-pink)';
+    };
+
+    const getConfidenceLevel = (confidence) => {
+        if (confidence >= 0.7) return 'High';
+        if (confidence >= 0.4) return 'Medium';
+        return 'Low';
+    };
+
+    const getRecommendationEmoji = (recommendation) => {
+        return recommendation?.includes('GO SURF') ? '🏄‍♂️' : '😴';
+    };
+
     const tabs = [
         { id: 'nowcast', label: 'Nowcast', icon: '🌊' },
         { id: 'sfbuoy', label: 'Buoy', icon: '📊' },
@@ -184,6 +309,8 @@ export default function SurfConditions() {
                 buoyData={buoyData} 
                 windData={windData} 
                 tideData={tideData}
+                surfPrediction={surfPrediction}
+                predictionLoading={predictionLoading}
                 loading={loading || windLoading || tideLoading} 
             />
 
@@ -211,6 +338,39 @@ export default function SurfConditions() {
                             <div className="wave-height">N/A</div>
                             <div className="wave-details">N/A • N/A</div>
                             <div className="wave-quality">⚠️ Data Unavailable</div>
+                        </div>
+                    )}
+                </motion.div>
+
+                <motion.div className="condition-item" whileHover={{ scale: 1.05 }}>
+                    <h3>📍 Pt Reyes Buoy</h3>
+                    {loading ? (
+                        <SurfSpinner text="Loading Pt Reyes data..." />
+                    ) : ptReyesBuoyData ? (
+                        <>
+                            <div className="wave-data">
+                                <div className="wave-height">
+                                    {parseFloat(ptReyesBuoyData.Hs).toFixed(1)}ft
+                                </div>
+                                <div className="wave-details">
+                                    @ {ptReyesBuoyData.Tp}s • {ptReyesBuoyData.Dp}°
+                                </div>
+                                <div className="wave-quality">
+                                    {getWaveQuality(ptReyesBuoyData.Hs).emoji} {getWaveQuality(ptReyesBuoyData.Hs).status}
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="wave-data">
+                            <div className="wave-height" style={{ fontSize: '1.2rem', color: 'var(--sunset-orange)' }}>
+                                Offline
+                            </div>
+                            <div className="wave-details" style={{ fontSize: '0.9rem', opacity: '0.8' }}>
+                                Buoy temporarily offline
+                            </div>
+                            <div className="wave-quality">
+                                🔧 Maintenance Mode
+                            </div>
                         </div>
                     )}
                 </motion.div>
@@ -396,6 +556,8 @@ export default function SurfConditions() {
                                 <TideTable tideData={tideData} />
                             </div>
                         )}
+
+
                     </motion.div>
                 </AnimatePresence>
             </motion.div>

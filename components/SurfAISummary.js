@@ -7,11 +7,25 @@ import {
     calculateOverallQuality,
     generateSummary
 } from './surfAnalysisUtils';
-import { validateSummary, getPrediction } from './surfApi';
+import { validateSummary } from './surfApi';
 
-const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
-    const [predictionScore, setPredictionScore] = useState(null);
-    const [predictionLoading, setPredictionLoading] = useState(false);
+const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictionLoading, loading }) => {
+    // Helper functions for surf prediction display
+    const getConfidenceColor = (confidence) => {
+        if (confidence >= 0.7) return 'var(--electric-green)';
+        if (confidence >= 0.4) return 'var(--sunset-orange)';
+        return 'var(--coral-pink)';
+    };
+
+    const getConfidenceLevel = (confidence) => {
+        if (confidence >= 0.7) return 'High';
+        if (confidence >= 0.4) return 'Medium';
+        return 'Low';
+    };
+
+    const getRecommendationEmoji = (recommendation) => {
+        return recommendation?.includes('GO SURF') ? '🏄‍♂️' : '😴';
+    };
     const [validatedSummary, setValidatedSummary] = useState(null);
     const [summaryValidating, setSummaryValidating] = useState(false);
     const [validationTimeout, setValidationTimeout] = useState(false);
@@ -67,40 +81,7 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
 
 
 
-    // Fetch prediction when surf data changes
-    useEffect(() => {
-        // Always attempt to get a prediction, but summary/validation will proceed regardless of prediction result
-        if (buoyData && windData && tideData && !loading) {
-            setPredictionLoading(true);
-            const waveHeight = parseFloat(buoyData.Hs) || 0;
-            const windDirection = windData.direction || 0;
-            let tidePhase = 'UNKNOWN';
-            if (tideData?.predictions) {
-                const tideAnalysis = analyzeTide(tideData);
-                tidePhase = tideAnalysis.isDropping ? 'FALLING' :
-                    tideAnalysis.direction === 'rising' ? 'RISING' : 'UNKNOWN';
-            }
-            // Use utility for ML wind direction
-            const { getSimpleWindDirection } = require('./surfAnalysisUtils');
-            const windDir = getSimpleWindDirection(windDirection);
-            const surfConditions = {
-                tide: tidePhase,
-                wind: windDir,
-                pt_reyes: waveHeight.toFixed(1),
-                sf_bar: waveHeight.toFixed(1)
-            };
-            getPrediction(surfConditions)
-                .then(score => {
-                    setPredictionScore(score);
-                    setPredictionLoading(false);
-                })
-                .catch(() => {
-                    // If prediction fails, set score to null and proceed
-                    setPredictionScore(null);
-                    setPredictionLoading(false);
-                });
-        }
-    }, [buoyData, windData, tideData, loading]);
+
 
     const surfAnalysis = useMemo(() => {
         if (loading || !buoyData || !windData) {
@@ -119,6 +100,9 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
         const windAnalysis = analyzeWind(windDirection, windSpeed);
         const swellAnalysis = analyzeSwell(waveHeight, wavePeriod);
         const tideAnalysis = analyzeTide(tideData);
+        // Extract prediction score from surfPrediction prop
+        const predictionScore = surfPrediction?.prediction?.confidence || null;
+        
         const overallQuality = calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, predictionScore);
         const summary = generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuality, {
             waveHeight,
@@ -141,7 +125,7 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
                 mlPrediction: predictionScore
             }
         };
-    }, [buoyData, windData, tideData, loading, predictionScore, predictionLoading]);
+    }, [buoyData, windData, tideData, loading, surfPrediction, predictionLoading]);
 
     // Prevent infinite validation loop by tracking last validated summary
     const lastValidatedSummary = useRef(null);
@@ -200,6 +184,21 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
     // Use validated summary if available, otherwise use original
     const displaySummary = validatedSummary || surfAnalysis.summary;
 
+    // Helper function to determine recommendation badge
+    const getRecommendationBadge = () => {
+        if (!surfPrediction || predictionLoading) return null;
+        
+        const recommendation = surfPrediction.summary?.recommendation || surfPrediction.prediction?.recommendation || '';
+        const confidence = surfPrediction.prediction?.confidence || 0;
+        const shouldGo = recommendation.includes('GO SURF') || surfPrediction.summary?.should_go;
+        
+        return {
+            text: shouldGo ? 'Go Surf!' : 'Skip Surfing!',
+            className: shouldGo ? 'go-surf' : 'skip-surf',
+            confidence: Math.round(confidence * 100)
+        };
+    };
+
     return (
         <motion.div
             className="surf-ai-summary"
@@ -207,43 +206,41 @@ const SurfAISummary = ({ buoyData, windData, tideData, loading }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
         >
-            {/* CONDITIONS SUMMARY Section */}
+            {/* CONSOLIDATED SURF AI Section */}
             <motion.div
-                className={`ai-summary-content ${surfAnalysis.quality}`}
+                className="surf-ai-unified"
                 whileHover={{ scale: 1.01 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
-                <div className="conditions-summary-header">
-                    <span className="ai-emoji">{surfAnalysis.emoji}</span>
-                    <span className="ai-label">CONDITIONS SUMMARY</span>
-                    <span className="confidence-indicator">
-                        {Array.from({ length: 5 }, (_, i) => (
-                            <span
-                                key={i}
-                                className={`confidence-dot ${i < surfAnalysis.confidence ? 'active' : ''}`}
-                            >
-                                •
-                            </span>
-                        ))}
-                    </span>
-                </div>
-                <div className="ai-summary-text">
-                    {surfAnalysis.summary}
-                </div>
-            </motion.div>
-
-            {/* SURF AI Section */}
-            <motion.div
-                className="surf-ai-content"
-                whileHover={{ scale: 1.01 }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4, hover: { type: "spring", stiffness: 400, damping: 25 } }}
-            >
                 <div className="surf-ai-header">
                     <span className="ai-label">🤖 SURF AI</span>
+                    <div className="recommendation-section">
+                        {predictionLoading ? (
+                            <div className="loading-spinner">🌊 Loading...</div>
+                        ) : getRecommendationBadge() ? (
+                            <>
+                                <div className={`recommendation-badge ${getRecommendationBadge().className}`}>
+                                    {getRecommendationBadge().text}
+                                </div>
+                                <div className="confidence-score">
+                                    {getRecommendationBadge().confidence}%
+                                </div>
+                            </>
+                        ) : (
+                            <div className="confidence-indicator">
+                                {Array.from({ length: 5 }, (_, i) => (
+                                    <span
+                                        key={i}
+                                        className={`confidence-dot ${i < surfAnalysis.confidence ? 'active' : ''}`}
+                                    >
+                                        •
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div className="ai-summary-text">
+                <div className="ai-content">
                     {summaryValidating 
                         ? <div className="spinner">🌊 Loading surf wisdom...</div>
                         : formatAISummary(displaySummary) || displaySummary

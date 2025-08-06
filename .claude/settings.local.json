@@ -8,7 +8,8 @@
       "Bash(npm install:*)",
       "Bash(npx tailwindcss:*)",
       "WebFetch(domain:unsplash.com)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

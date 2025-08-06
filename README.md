@@ -4,9 +4,13 @@ A modern Next.js web application providing real-time surf conditions for Ocean B
 
 ## 🏄‍♂️ Features
 
+- **🤖 Consolidated AI Summary**: Single unified section combining ML predictions with personality elements (stoke rating, haiku, crystal recommendations)
+- **🎯 Smart Recommendation Badges**: Clear "Go Surf!" or "Skip Surfing!" badges with confidence percentages
+- **⚡ Fallback Surf Prediction**: Local surf analysis when Cloud Function fails, using real surf science principles
+- **🔧 Buoy Maintenance Handling**: Graceful offline buoy support with "Maintenance Mode" display for Pt Reyes station
 - **🤖 Wind-Weighted AI Analysis**: Intelligent surf assessment that properly prioritizes wind as the primary limiting factor
 - **✨ AI Summary Validation**: Optional OpenAI integration ensures all summaries are grammatically correct and human-readable
-- **📊 Real-time Surf Data**: Live buoy readings from SF Bar Buoy (46026) with cleaned data processing
+- **📊 Multi-Station Buoy Data**: Live readings from SF Bar Buoy (46026) and Pt Reyes (029) with offline handling
 - **🌊 Advanced Tide Analysis**: Comprehensive tide timing recommendations with visual charts and organized data rows
 - **💨 Smart Wind Assessment**: Properly weighs wind conditions - if it's >12kts onshore, you can't surf regardless of swell
 - **🌅 Full-Width Hero**: Beautiful ocean background imagery with smart content overlap
@@ -41,20 +45,19 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Key Components
 
-- `SurfConditions.js` - Main surf data dashboard with clean tabbed interface
-- `SurfAISummary.js` - Advanced AI surf analysis with wind weighting and validation
+- `SurfConditions.js` - Main surf data dashboard with multi-station buoy support and offline handling
+- `SurfAISummary.js` - Consolidated AI analysis with recommendation badges and fallback logic
 - `Layout.js` - Main layout wrapper with dark mode default and theme toggle
 - `HeroSection.js` - Full-width hero section with ocean background imagery
 - `TideTable.js` - Interactive tide display with charts and organized data rows
 
 ### API Endpoints
 
-- `/api/buoy` - SF Bar Buoy wave data (cleaned console logging)
+- `/api/buoy` - Multi-station buoy data with support for SF Bar (142) and Pt Reyes (029) stations
 - `/api/wind` - Wind conditions with multiple fallback sources
-- `/api/tide` - Tide predictions with comprehensive analysis
-- `/api/predict` - BigQuery ML surf score predictions (enhanced error handling)
-- `/api/validate-summary` - 🆕 AI-powered summary validation using OpenAI (optional)
-- `/api/magic8ball` - Random surf advice with ML integration
+- `/api/tide` - Tide predictions with comprehensive analysis and real-time calculations
+- `/api/surf-predictor` - Surf predictions with local fallback logic when Cloud Function fails
+- `/api/validate-summary` - AI-powered summary validation using OpenAI (optional)
 - `/api/sitemap` - Dynamic sitemap generation
 - `/api/robots` - Robots.txt generation
 
@@ -106,8 +109,10 @@ This project uses:
 - **ES modules** configuration (`"type": "module"` in package.json)
 - **Google Tag Manager** integration for analytics
 - **OpenAI GPT-3.5-turbo** for summary validation (optional)
-- **BigQuery ML** integration for surf predictions
-- **Modern CSS** with custom properties and clean design patterns
+- **BigQuery ML** integration for surf predictions (with local fallback)
+- **Modern CSS** with custom properties and consolidated UI design
+- **Multi-station CDIP API** support for robust buoy data collection
+- **External project documentation** in `/prompts` folder for Cloud Function fixes
 
 ### Environment Variables (Optional)
 ```bash
