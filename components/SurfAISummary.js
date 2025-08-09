@@ -130,56 +130,74 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
     // Prevent infinite validation loop by tracking last validated summary
     const lastValidatedSummary = useRef(null);
     const validationTimeoutRef = useRef(null);
+    const validationInProgress = useRef(false);
+    const debounceTimeoutRef = useRef(null);
     
     useEffect(() => {
+        // Clear any pending debounced validation
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+        
         // Always validate the summary, even if prediction failed (score is null)
         if (
             surfAnalysis.summary &&
             !loading &&
             !summaryValidating &&
+            !validationInProgress.current &&
             surfAnalysis.summary !== lastValidatedSummary.current
         ) {
-            setSummaryValidating(true);
-            setValidationTimeout(false);
-            lastValidatedSummary.current = surfAnalysis.summary;
+            // Debounce validation calls to prevent rapid successive calls
+            debounceTimeoutRef.current = setTimeout(() => {
+                setSummaryValidating(true);
+                setValidationTimeout(false);
+                validationInProgress.current = true;
+                lastValidatedSummary.current = surfAnalysis.summary;
             
-            // Set timeout for validation
-            validationTimeoutRef.current = setTimeout(() => {
-                setValidationTimeout(true);
-                setSummaryValidating(false);
-                setValidatedSummary("bad juju today. can't see the surf");
-            }, 10000); // 10 second timeout
-            
-            const surfData = {
-                waveHeight: parseFloat(buoyData?.Hs) || 0,
-                wavePeriod: parseFloat(buoyData?.Tp) || 0,
-                windSpeed: parseFloat(windData?.speed) || 0,
-                windDirection: windData?.direction || 0
-            };
-            validateSummary(surfAnalysis.summary, surfData)
-                .then(result => {
-                    if (validationTimeoutRef.current) {
-                        clearTimeout(validationTimeoutRef.current);
-                        setValidatedSummary(result.validatedSummary);
-                        setSummaryValidating(false);
-                    }
-                })
-                .catch(() => {
-                    if (validationTimeoutRef.current) {
-                        clearTimeout(validationTimeoutRef.current);
-                        setValidationTimeout(true);
-                        setValidatedSummary("bad juju today. can't see the surf");
-                        setSummaryValidating(false);
-                    }
-                });
+                // Set timeout for validation
+                validationTimeoutRef.current = setTimeout(() => {
+                    setValidationTimeout(true);
+                    setSummaryValidating(false);
+                    validationInProgress.current = false;
+                    setValidatedSummary("bad juju today. can't see the surf");
+                }, 10000); // 10 second timeout
+                
+                const surfData = {
+                    waveHeight: parseFloat(buoyData?.Hs) || 0,
+                    wavePeriod: parseFloat(buoyData?.Tp) || 0,
+                    windSpeed: parseFloat(windData?.speed) || 0,
+                    windDirection: windData?.direction || 0
+                };
+                validateSummary(surfAnalysis.summary, surfData)
+                    .then(result => {
+                        if (validationTimeoutRef.current) {
+                            clearTimeout(validationTimeoutRef.current);
+                            setValidatedSummary(result.validatedSummary);
+                            setSummaryValidating(false);
+                            validationInProgress.current = false;
+                        }
+                    })
+                    .catch(() => {
+                        if (validationTimeoutRef.current) {
+                            clearTimeout(validationTimeoutRef.current);
+                            setValidationTimeout(true);
+                            setValidatedSummary("bad juju today. can't see the surf");
+                            setSummaryValidating(false);
+                            validationInProgress.current = false;
+                        }
+                    });
+            }, 500); // 500ms debounce delay
         }
         
         return () => {
             if (validationTimeoutRef.current) {
                 clearTimeout(validationTimeoutRef.current);
             }
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
         };
-    }, [surfAnalysis.summary, loading, summaryValidating, buoyData, windData]);
+    }, [surfAnalysis.summary, loading, summaryValidating, buoyData?.Hs, buoyData?.Tp, windData?.direction, windData?.speed]);
 
     // Use validated summary if available, otherwise use original
     const displaySummary = validatedSummary || surfAnalysis.summary;
