@@ -100,40 +100,52 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
         const windAnalysis = analyzeWind(windDirection, windSpeed);
         const swellAnalysis = analyzeSwell(waveHeight, wavePeriod);
         const tideAnalysis = analyzeTide(tideData);
-        // Extract prediction score from surfPrediction prop
-        const predictionScore = surfPrediction?.prediction?.confidence || null;
         
-        const overallQuality = calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, predictionScore);
+        // Create stable summary without prediction to avoid re-validation loops
+        // Prediction will be handled separately in the UI
+        const overallQuality = calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, null);
         const summary = generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuality, {
             waveHeight,
             wavePeriod,
             windSpeed,
             windDirection,
-            predictionScore,
-            predictionLoading
+            predictionScore: null, // Don't include prediction in summary to keep it stable
+            predictionLoading: false
         });
         return {
             summary,
             quality: overallQuality.quality,
             emoji: overallQuality.emoji,
             confidence: overallQuality.confidence,
-            predictionScore,
+            predictionScore: surfPrediction?.prediction?.confidence || null,
             details: {
                 wind: windAnalysis,
                 swell: swellAnalysis,
                 tide: tideAnalysis,
-                mlPrediction: predictionScore
+                mlPrediction: surfPrediction?.prediction?.confidence || null
             }
         };
-    }, [buoyData, windData, tideData, loading, surfPrediction, predictionLoading]);
+    }, [buoyData, windData, tideData, loading]); // Removed surfPrediction and predictionLoading from deps
 
     // Prevent infinite validation loop by tracking last validated summary
     const lastValidatedSummary = useRef(null);
     const validationTimeoutRef = useRef(null);
     const validationInProgress = useRef(false);
     const debounceTimeoutRef = useRef(null);
+    const hasMountedRef = useRef(false); // Guard against React Strict Mode double execution
     
     useEffect(() => {
+        // Guard against React Strict Mode double execution and duplicate runs
+        if (!hasMountedRef.current) {
+            hasMountedRef.current = true;
+            return;
+        }
+        
+        // Skip validation if summary hasn't actually changed content
+        if (surfAnalysis.summary === lastValidatedSummary.current) {
+            return;
+        }
+        
         // Clear any pending debounced validation
         if (debounceTimeoutRef.current) {
             clearTimeout(debounceTimeoutRef.current);
@@ -197,7 +209,7 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
                 clearTimeout(debounceTimeoutRef.current);
             }
         };
-    }, [surfAnalysis.summary, loading, summaryValidating, buoyData?.Hs, buoyData?.Tp, windData?.direction, windData?.speed]);
+    }, [surfAnalysis.summary, loading, summaryValidating]); // Removed individual buoy/wind values to prevent excessive re-validation
 
     // Use validated summary if available, otherwise use original
     const displaySummary = validatedSummary || surfAnalysis.summary;

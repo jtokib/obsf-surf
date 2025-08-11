@@ -24,6 +24,10 @@ function setCachedResult(cacheKey, result) {
     });
 }
 
+// Track validation calls to prevent duplicates
+const validationCallsLog = new Map();
+const DUPLICATE_PROTECTION_WINDOW = 2000; // 2 seconds
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         res.setHeader('Allow', ['POST']);
@@ -32,6 +36,27 @@ export default async function handler(req, res) {
 
     try {
         const { summary, surfData } = req.body;
+        
+        // Debug logging with timestamp
+        const timestamp = new Date().toISOString();
+        console.log(`[${timestamp}] validate-summary called with summary length: ${summary?.length || 0}`);
+        
+        // Check for duplicate calls in rapid succession
+        const callKey = getCacheKey(summary, surfData);
+        const lastCall = validationCallsLog.get(callKey);
+        const now = Date.now();
+        
+        if (lastCall && (now - lastCall) < DUPLICATE_PROTECTION_WINDOW) {
+            console.log(`[${timestamp}] Duplicate call detected within ${DUPLICATE_PROTECTION_WINDOW}ms, ignoring`);
+            return res.status(429).json({ 
+                error: 'Duplicate request',
+                validatedSummary: summary,
+                wasValidated: false,
+                reason: 'Duplicate call protection'
+            });
+        }
+        
+        validationCallsLog.set(callKey, now);
 
         if (!summary) {
             return res.status(400).json({ error: 'Summary is required' });

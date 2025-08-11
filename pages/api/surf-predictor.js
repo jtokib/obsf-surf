@@ -1,4 +1,4 @@
-// Temporary fallback surf logic while Cloud Function is being fixed
+// Fallback surf logic for when Cloud Function is unavailable
 function generateFallbackPrediction(conditions) {
     const {
         sf_bar_height,
@@ -93,7 +93,11 @@ function generateFallbackPrediction(conditions) {
             confidence_level: confidence >= 0.7 ? "High" : confidence >= 0.4 ? "Medium" : "Low",
             recommendation: recommendation
         },
-        note: "Using fallback logic - Cloud Function needs repair"
+        data_sources: {
+            pt_reyes_available: false,
+            sf_bar_available: true,
+            prediction_mode: "fallback"
+        }
     };
 }
 
@@ -112,17 +116,9 @@ export default async function handler(req, res) {
         return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    // For now, use fallback logic since Cloud Function is broken
-    if (req.method === 'POST' && req.body) {
-        console.log('Using fallback prediction logic for conditions:', req.body);
-        const prediction = generateFallbackPrediction(req.body);
-        
-        // Cache for 5 minutes
-        res.setHeader('Cache-Control', 's-maxage=300');
-        return res.status(200).json(prediction);
-    }
+    // Try Cloud Function first, fallback only if it fails
 
-    // Fallback to original Cloud Function for GET requests or if no body
+    // Call Cloud Function
     try {
         const apiUrl = 'https://us-central1-jtokib.cloudfunctions.net/surf-predictor';
         
@@ -152,8 +148,19 @@ export default async function handler(req, res) {
         
         return res.status(200).json(data);
     } catch (error) {
-        console.error('Surf predictor API error:', error);
+        console.error('Cloud Function failed, using fallback:', error);
         
+        // Use fallback prediction for POST requests with body
+        if (req.method === 'POST' && req.body) {
+            console.log('Using fallback prediction logic for conditions:', req.body);
+            const prediction = generateFallbackPrediction(req.body);
+            
+            // Cache for 5 minutes
+            res.setHeader('Cache-Control', 's-maxage=300');
+            return res.status(200).json(prediction);
+        }
+        
+        // For GET requests or requests without body, return error
         return res.status(503).json({
             error: 'Surf prediction unavailable',
             message: 'Unable to retrieve surf prediction from API',
