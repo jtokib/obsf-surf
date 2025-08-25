@@ -1,31 +1,9 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import {
-    analyzeWind,
-    analyzeTide,
-    analyzeSwell,
-    calculateOverallQuality,
-    generateSummary
-} from './surfAnalysisUtils';
-import { validateSummary } from './surfApi';
+import { createAISummary, surfUtils } from './surfApi';
 
 const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictionLoading, loading }) => {
-    // Helper functions for surf prediction display
-    const getConfidenceColor = (confidence) => {
-        if (confidence >= 0.7) return 'var(--electric-green)';
-        if (confidence >= 0.4) return 'var(--sunset-orange)';
-        return 'var(--coral-pink)';
-    };
-
-    const getConfidenceLevel = (confidence) => {
-        if (confidence >= 0.7) return 'High';
-        if (confidence >= 0.4) return 'Medium';
-        return 'Low';
-    };
-
-    const getRecommendationEmoji = (recommendation) => {
-        return recommendation?.includes('GO SURF') ? '🏄‍♂️' : '😴';
-    };
+    // Helper functions for surf prediction display - imported from surfUtils
     const [validatedSummary, setValidatedSummary] = useState(null);
     const [summaryValidating, setSummaryValidating] = useState(false);
     const [validationTimeout, setValidationTimeout] = useState(false);
@@ -79,56 +57,10 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
         return <div className="ai-summary-text">{summary}</div>;
     };
 
-
-
-
-
-    const surfAnalysis = useMemo(() => {
-        if (loading || !buoyData || !windData) {
-            return {
-                summary: "🤖 Analyzing current surf conditions...",
-                quality: "unknown",
-                emoji: "🔄",
-                confidence: 0
-            };
-        }
-        const waveHeight = parseFloat(buoyData.Hs) || 0;
-        const wavePeriod = parseFloat(buoyData.Tp) || 0;
-        const waveDirection = parseInt(buoyData.Dp) || 0;
-        const windSpeed = parseFloat(windData.speed) || 0;
-        const windDirection = windData.direction || 0;
-        const windAnalysis = analyzeWind(windDirection, windSpeed);
-        const swellAnalysis = analyzeSwell(waveHeight, wavePeriod);
-        const tideAnalysis = analyzeTide(tideData);
-        
-        // Create stable summary without prediction to avoid re-validation loops
-        // Prediction will be handled separately in the UI
-        const overallQuality = calculateOverallQuality(windAnalysis, swellAnalysis, tideAnalysis, null);
-        const summary = generateSummary(windAnalysis, swellAnalysis, tideAnalysis, overallQuality, {
-            waveHeight,
-            wavePeriod,
-            windSpeed,
-            windDirection,
-            predictionScore: null, // Don't include prediction in summary to keep it stable
-            predictionLoading: false
-        });
-        return {
-            summary,
-            quality: overallQuality.quality,
-            emoji: overallQuality.emoji,
-            confidence: overallQuality.confidence,
-            predictionScore: surfPrediction?.prediction?.confidence || null,
-            details: {
-                wind: windAnalysis,
-                swell: swellAnalysis,
-                tide: tideAnalysis,
-                mlPrediction: surfPrediction?.prediction?.confidence || null
-            }
-        };
-    }, [buoyData, windData, tideData, loading]); // Removed surfPrediction and predictionLoading from deps
+    // Simplified data check for validation trigger
+    const hasRequiredData = !loading && buoyData && windData;
 
     // Prevent infinite validation loop by tracking last validated summary
-    const lastValidatedSummary = useRef(null);
     const validationTimeoutRef = useRef(null);
     const validationInProgress = useRef(false);
     const debounceTimeoutRef = useRef(null);
@@ -141,30 +73,18 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
             return;
         }
         
-        // Skip validation if summary hasn't actually changed content
-        if (surfAnalysis.summary === lastValidatedSummary.current) {
-            return;
-        }
-        
-        // Clear any pending debounced validation
-        if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-        }
-        
-        // Always validate the summary, even if prediction failed (score is null)
+        // Start validation when data is available and not already validating
         if (
-            surfAnalysis.summary &&
-            !loading &&
+            hasRequiredData &&
             !summaryValidating &&
             !validationInProgress.current &&
-            surfAnalysis.summary !== lastValidatedSummary.current
+            !validatedSummary
         ) {
             // Debounce validation calls to prevent rapid successive calls
             debounceTimeoutRef.current = setTimeout(() => {
                 setSummaryValidating(true);
                 setValidationTimeout(false);
                 validationInProgress.current = true;
-                lastValidatedSummary.current = surfAnalysis.summary;
             
                 // Set timeout for validation
                 validationTimeoutRef.current = setTimeout(() => {
@@ -180,7 +100,20 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
                     windSpeed: parseFloat(windData?.speed) || 0,
                     windDirection: windData?.direction || 0
                 };
-                validateSummary(surfAnalysis.summary, surfData)
+                
+                // Create a proper basic surf conditions summary for AI to enhance
+                const createBasicSummary = (buoyData, windData, tideData, surfData) => {
+                    const waveHeight = surfData.waveHeight.toFixed(1);
+                    const wavePeriod = surfData.wavePeriod;
+                    const windSpeed = surfData.windSpeed;
+                    const windDir = windData?.directionText || surfUtils.getWindDirectionText(surfData.windDirection);
+                    const tideDirection = surfUtils.getCurrentTideDirection(tideData);
+                    
+                    return `Current surf conditions: ${waveHeight}ft waves at ${wavePeriod}s period, ${windSpeed}kt ${windDir} wind, tide ${tideDirection}`;
+                };
+                
+                const basicSummary = createBasicSummary(buoyData, windData, tideData, surfData);
+                createAISummary(basicSummary, surfData)
                     .then(result => {
                         if (validationTimeoutRef.current) {
                             clearTimeout(validationTimeoutRef.current);
@@ -209,10 +142,10 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
                 clearTimeout(debounceTimeoutRef.current);
             }
         };
-    }, [surfAnalysis.summary, loading, summaryValidating]); // Removed individual buoy/wind values to prevent excessive re-validation
+    }, [hasRequiredData, summaryValidating, validatedSummary]);
 
-    // Use validated summary if available, otherwise use original
-    const displaySummary = validatedSummary || surfAnalysis.summary;
+    // Only show validated summary or loading state
+    const shouldShowLoading = loading || summaryValidating || !validatedSummary;
 
     // Helper function to determine recommendation badge
     const getRecommendationBadge = () => {
@@ -261,7 +194,7 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
                                 {Array.from({ length: 5 }, (_, i) => (
                                     <span
                                         key={i}
-                                        className={`confidence-dot ${i < surfAnalysis.confidence ? 'active' : ''}`}
+                                        className={`confidence-dot ${i < 3 ? 'active' : ''}`}
                                     >
                                         •
                                     </span>
@@ -271,9 +204,9 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
                     </div>
                 </div>
                 <div className="ai-content">
-                    {summaryValidating 
+                    {shouldShowLoading 
                         ? <div className="spinner">🌊 Loading surf wisdom...</div>
-                        : formatAISummary(displaySummary) || displaySummary
+                        : formatAISummary(validatedSummary) || validatedSummary
                     }
                 </div>
             </motion.div>

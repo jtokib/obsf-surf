@@ -1,4 +1,4 @@
-import { validateSummary, getPrediction } from '../../components/surfApi';
+import { createAISummary, surfUtils } from '../../components/surfApi';
 import { mockFetch, mockSuccessfulApiResponse, mockFailedApiResponse } from '../utils/testHelpers';
 
 describe('surfApi Utilities', () => {
@@ -16,7 +16,7 @@ describe('surfApi Utilities', () => {
     jest.restoreAllMocks();
   });
 
-  describe('validateSummary function', () => {
+  describe('createAISummary function', () => {
     const mockSummary = "Today's surf conditions are epic with 6ft waves!";
     const mockSurfData = {
       waveHeight: 2.5,
@@ -34,9 +34,9 @@ describe('surfApi Utilities', () => {
 
         fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
 
-        await validateSummary(mockSummary, mockSurfData);
+        await createAISummary(mockSummary, mockSurfData);
 
-        expect(fetchMock).toHaveBeenCalledWith('/api/validate-summary', {
+        expect(fetchMock).toHaveBeenCalledWith('/api/create-ai-summary', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ describe('surfApi Utilities', () => {
 
         fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
 
-        const result = await validateSummary(mockSummary, mockSurfData);
+        const result = await createAISummary(mockSummary, mockSurfData);
 
         expect(result).toEqual(mockResponse);
         expect(result.validatedSummary).toBe("Enhanced summary with better grammar and flow.");
@@ -81,7 +81,7 @@ describe('surfApi Utilities', () => {
       test('returns original summary when API returns non-ok status', async () => {
         fetchMock.mockResolvedValueOnce(mockFailedApiResponse(500));
 
-        const result = await validateSummary(mockSummary, mockSurfData);
+        const result = await createAISummary(mockSummary, mockSurfData);
 
         expect(result).toEqual({
           validatedSummary: mockSummary,
@@ -92,7 +92,7 @@ describe('surfApi Utilities', () => {
       test('returns original summary when API returns 404', async () => {
         fetchMock.mockResolvedValueOnce(mockFailedApiResponse(404, 'Not Found'));
 
-        const result = await validateSummary(mockSummary, mockSurfData);
+        const result = await createAISummary(mockSummary, mockSurfData);
 
         expect(result).toEqual({
           validatedSummary: mockSummary,
@@ -103,7 +103,7 @@ describe('surfApi Utilities', () => {
       test('handles network errors gracefully', async () => {
         fetchMock.mockRejectedValueOnce(new Error('Network error'));
 
-        const result = await validateSummary(mockSummary, mockSurfData);
+        const result = await createAISummary(mockSummary, mockSurfData);
 
         expect(result).toEqual({
           validatedSummary: mockSummary,
@@ -118,7 +118,7 @@ describe('surfApi Utilities', () => {
           json: () => Promise.reject(new Error('Invalid JSON')),
         });
 
-        const result = await validateSummary(mockSummary, mockSurfData);
+        const result = await createAISummary(mockSummary, mockSurfData);
 
         expect(result).toEqual({
           validatedSummary: mockSummary,
@@ -130,7 +130,7 @@ describe('surfApi Utilities', () => {
         const consoleWarnSpy = jest.spyOn(console, 'warn');
         fetchMock.mockRejectedValueOnce(new Error('API unavailable'));
 
-        await validateSummary(mockSummary, mockSurfData);
+        await createAISummary(mockSummary, mockSurfData);
 
         expect(consoleWarnSpy).toHaveBeenCalledWith('Summary validation failed:', expect.any(Error));
       });
@@ -158,7 +158,7 @@ describe('surfApi Utilities', () => {
 
         const result = await validateSummary(mockSummary, undefined);
 
-        expect(fetchMock).toHaveBeenCalledWith('/api/validate-summary', {
+        expect(fetchMock).toHaveBeenCalledWith('/api/create-ai-summary', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -172,196 +172,51 @@ describe('surfApi Utilities', () => {
     });
   });
 
-  describe('getPrediction function', () => {
-    const mockSurfConditions = {
-      sf_bar_height: '2.5',
-      sf_bar_period: 10.2,
-      sf_bar_direction: 275,
-      wind_category: 'light',
-      size_category: 'knee_high',
-      tide_category: 'mid_flood'
-    };
-
-    describe('successful API calls', () => {
-      test('makes POST request with correct parameters', async () => {
-        const mockResponse = { predicted_score: 0.75 };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        await getPrediction(mockSurfConditions);
-
-        expect(fetchMock).toHaveBeenCalledWith('/api/predict', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(mockSurfConditions),
-        });
+  describe('surfUtils utility functions', () => {
+    describe('getWindDirectionText', () => {
+      test('returns correct cardinal directions', () => {
+        expect(surfUtils.getWindDirectionText(0)).toBe('N');
+        expect(surfUtils.getWindDirectionText(90)).toBe('E');
+        expect(surfUtils.getWindDirectionText(180)).toBe('S');
+        expect(surfUtils.getWindDirectionText(270)).toBe('W');
       });
 
-      test('returns predicted score for old format response', async () => {
-        const mockResponse = { predicted_score: 0.85 };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBe(0.85);
-      });
-
-      test('converts "Good" prediction to numeric score', async () => {
-        const mockResponse = { prediction: 'Good' };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBe(1);
-      });
-
-      test('converts "Bad" prediction to numeric score', async () => {
-        const mockResponse = { prediction: 'Bad' };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBe(0);
-      });
-
-      test('handles mixed format response (prioritizes predicted_score)', async () => {
-        const mockResponse = { 
-          predicted_score: 0.65,
-          prediction: 'Good'
-        };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBe(0.65);
+      test('returns correct intermediate directions', () => {
+        expect(surfUtils.getWindDirectionText(45)).toBe('NE');
+        expect(surfUtils.getWindDirectionText(135)).toBe('SE');
+        expect(surfUtils.getWindDirectionText(225)).toBe('SW');
+        expect(surfUtils.getWindDirectionText(315)).toBe('NW');
       });
     });
 
-    describe('failed API calls', () => {
-      test('returns null on non-ok HTTP status', async () => {
-        fetchMock.mockResolvedValueOnce(mockFailedApiResponse(500));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBeNull();
-      });
-
-      test('logs error for HTTP error status', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error');
-        fetchMock.mockResolvedValueOnce(mockFailedApiResponse(404));
-
-        await getPrediction(mockSurfConditions);
-
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Prediction API error:', 404);
-      });
-
-      test('returns null on network error', async () => {
-        fetchMock.mockRejectedValueOnce(new Error('Network timeout'));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBeNull();
-      });
-
-      test('logs error on network failure', async () => {
-        const consoleErrorSpy = jest.spyOn(console, 'error');
-        const networkError = new Error('Connection failed');
-        fetchMock.mockRejectedValueOnce(networkError);
-
-        await getPrediction(mockSurfConditions);
-
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error getting prediction:', networkError);
-      });
-
-      test('returns null when response has no prediction data', async () => {
-        const mockResponse = { message: 'No prediction available' };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBeNull();
+    describe('getWaveQuality', () => {
+      test('categorizes wave sizes correctly', () => {
+        expect(surfUtils.getWaveQuality(0.3)).toEqual({ emoji: '😴', status: 'Flat City' });
+        expect(surfUtils.getWaveQuality(1.0)).toEqual({ emoji: '🏄‍♂️', status: 'Fun Size' });
+        expect(surfUtils.getWaveQuality(1.5)).toEqual({ emoji: '🔥', status: 'Epic!' });
+        expect(surfUtils.getWaveQuality(2.5)).toEqual({ emoji: '⚡', status: 'GNARLY!' });
       });
     });
 
-    describe('response format handling', () => {
-      test('handles undefined predicted_score', async () => {
-        const mockResponse = { 
-          predicted_score: undefined,
-          prediction: 'Good'
-        };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBe(1);
-      });
-
-      test('handles null prediction values', async () => {
-        const mockResponse = { 
-          predicted_score: null,
-          prediction: null
-        };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBeNull();
-      });
-
-      test('handles unexpected prediction string values', async () => {
-        const mockResponse = { prediction: 'Unknown' };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBe(0); // Should default to 0 for non-"Good" values
-      });
-
-      test('handles case insensitive prediction values', async () => {
-        const mockResponse = { prediction: 'GOOD' };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction(mockSurfConditions);
-
-        expect(result).toBe(1);
-      });
-    });
-
-    describe('input validation', () => {
-      test('handles empty surf conditions', async () => {
-        const mockResponse = { predicted_score: 0.5 };
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse(mockResponse));
-
-        const result = await getPrediction({});
-
-        expect(result).toBe(0.5);
-      });
-
-      test('handles null surf conditions', async () => {
-        fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse({ predicted_score: 0.3 }));
-
-        const result = await getPrediction(null);
-
-        expect(fetchMock).toHaveBeenCalledWith('/api/predict', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(null),
-        });
+    describe('getWindCondition', () => {
+      test('categorizes wind speeds correctly', () => {
+        expect(surfUtils.getWindCondition(2).status).toBe('Glassy');
+        expect(surfUtils.getWindCondition(8).status).toBe('Light');
+        expect(surfUtils.getWindCondition(12).status).toBe('Moderate');
+        expect(surfUtils.getWindCondition(20).status).toBe('Strong');
+        expect(surfUtils.getWindCondition(30).status).toBe('Howling!');
       });
     });
   });
 
   describe('error resilience', () => {
-    test('validateSummary continues working after network failure', async () => {
+    test('createAISummary continues working after network failure', async () => {
       const mockSummary = 'Test summary';
       const mockSurfData = { waveHeight: 2 };
 
       // First call fails
       fetchMock.mockRejectedValueOnce(new Error('Network error'));
-      let result1 = await validateSummary(mockSummary, mockSurfData);
+      let result1 = await createAISummary(mockSummary, mockSurfData);
 
       expect(result1).toEqual({
         validatedSummary: mockSummary,
@@ -374,7 +229,7 @@ describe('surfApi Utilities', () => {
         wasValidated: true
       }));
 
-      let result2 = await validateSummary(mockSummary, mockSurfData);
+      let result2 = await createAISummary(mockSummary, mockSurfData);
 
       expect(result2).toEqual({
         validatedSummary: 'Validated summary',
@@ -382,23 +237,10 @@ describe('surfApi Utilities', () => {
       });
     });
 
-    test('getPrediction continues working after API failure', async () => {
-      const mockConditions = { wave_height: 2.5 };
-
-      // First call fails
-      fetchMock.mockResolvedValueOnce(mockFailedApiResponse(503));
-      let result1 = await getPrediction(mockConditions);
-      expect(result1).toBeNull();
-
-      // Second call succeeds
-      fetchMock.mockResolvedValueOnce(mockSuccessfulApiResponse({ predicted_score: 0.8 }));
-      let result2 = await getPrediction(mockConditions);
-      expect(result2).toBe(0.8);
-    });
   });
 
   describe('concurrent requests', () => {
-    test('handles multiple validateSummary calls simultaneously', async () => {
+    test('handles multiple createAISummary calls simultaneously', async () => {
       const summaries = ['Summary 1', 'Summary 2', 'Summary 3'];
       const mockSurfData = { waveHeight: 2.5 };
 
@@ -409,7 +251,7 @@ describe('surfApi Utilities', () => {
       }));
 
       const promises = summaries.map(summary => 
-        validateSummary(summary, mockSurfData)
+        createAISummary(summary, mockSurfData)
       );
 
       const results = await Promise.all(promises);
@@ -421,26 +263,5 @@ describe('surfApi Utilities', () => {
       expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 
-    test('handles multiple getPrediction calls simultaneously', async () => {
-      const conditions = [
-        { wave_height: 2.5 },
-        { wave_height: 3.0 },
-        { wave_height: 1.5 }
-      ];
-
-      fetchMock.mockResolvedValue(mockSuccessfulApiResponse({ predicted_score: 0.7 }));
-
-      const promises = conditions.map(condition => 
-        getPrediction(condition)
-      );
-
-      const results = await Promise.all(promises);
-
-      expect(results).toHaveLength(3);
-      results.forEach(result => {
-        expect(result).toBe(0.7);
-      });
-      expect(fetchMock).toHaveBeenCalledTimes(3);
-    });
   });
 });

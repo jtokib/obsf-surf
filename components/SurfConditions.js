@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TideTable from './TideTable';
 import SurfAISummary from './SurfAISummary';
 import Image from 'next/image';
+import { surfUtils } from './surfApi';
 
 export default function SurfConditions() {
     const [buoyData, setBuoyData] = useState(null);
@@ -219,39 +220,7 @@ export default function SurfConditions() {
     };
 
 
-    const getWaveQuality = (height) => {
-        if (!height) return { emoji: '❓', status: 'Unknown' };
-        const ft = height * 3.281;
-        if (ft < 2) return { emoji: '😴', status: 'Flat City' };
-        if (ft < 4) return { emoji: '🏄‍♂️', status: 'Fun Size' };
-        if (ft < 6) return { emoji: '🔥', status: 'Epic!' };
-        return { emoji: '⚡', status: 'GNARLY!' };
-    };
-
-    const getWindCondition = (speed) => {
-        if (!speed) return { emoji: '❓', status: 'Unknown', color: 'var(--text-color)' };
-        if (speed < 5) return { emoji: '😴', status: 'Glassy', color: 'var(--electric-green)' };
-        if (speed < 10) return { emoji: '👌', status: 'Light', color: 'var(--neon-cyan)' };
-        if (speed < 15) return { emoji: '💨', status: 'Moderate', color: 'var(--sunset-orange)' };
-        if (speed < 25) return { emoji: '🌪️', status: 'Strong', color: 'var(--coral-pink)' };
-        return { emoji: '⚡', status: 'Howling!', color: 'var(--coral-pink)' };
-    };
-
-    const getConfidenceColor = (confidence) => {
-        if (confidence >= 0.7) return 'var(--electric-green)';
-        if (confidence >= 0.4) return 'var(--sunset-orange)';
-        return 'var(--coral-pink)';
-    };
-
-    const getConfidenceLevel = (confidence) => {
-        if (confidence >= 0.7) return 'High';
-        if (confidence >= 0.4) return 'Medium';
-        return 'Low';
-    };
-
-    const getRecommendationEmoji = (recommendation) => {
-        return recommendation?.includes('GO SURF') ? '🏄‍♂️' : '😴';
-    };
+    // Utility functions now imported from surfApi.js as surfUtils
 
     const tabs = [
         { id: 'nowcast', label: 'Nowcast', icon: '🌊' },
@@ -329,7 +298,7 @@ export default function SurfConditions() {
                                     @ {buoyData.Tp}s • {buoyData.Dp}°
                                 </div>
                                 <div className="wave-quality">
-                                    {getWaveQuality(buoyData.Hs).emoji} {getWaveQuality(buoyData.Hs).status}
+                                    {surfUtils.getWaveQuality(buoyData.Hs).emoji} {surfUtils.getWaveQuality(buoyData.Hs).status}
                                 </div>
                             </div>
                         </>
@@ -356,7 +325,7 @@ export default function SurfConditions() {
                                     @ {ptReyesBuoyData.Tp}s • {ptReyesBuoyData.Dp}°
                                 </div>
                                 <div className="wave-quality">
-                                    {getWaveQuality(ptReyesBuoyData.Hs).emoji} {getWaveQuality(ptReyesBuoyData.Hs).status}
+                                    {surfUtils.getWaveQuality(ptReyesBuoyData.Hs).emoji} {surfUtils.getWaveQuality(ptReyesBuoyData.Hs).status}
                                 </div>
                             </div>
                         </>
@@ -385,8 +354,8 @@ export default function SurfConditions() {
                                 fontFamily: 'var(--font-display)',
                                 fontSize: '1.8rem',
                                 fontWeight: '700',
-                                color: getWindCondition(windData.speed).color,
-                                textShadow: `0 0 10px ${getWindCondition(windData.speed).color}`
+                                color: surfUtils.getWindCondition(windData.speed).color,
+                                textShadow: `0 0 10px ${surfUtils.getWindCondition(windData.speed).color}`
                             }}>
                                 {windData.speed} kts
                             </div>
@@ -399,7 +368,7 @@ export default function SurfConditions() {
                                 {windData.direction}° • {windData.directionText}
                             </div>
                             <div className="wind-quality">
-                                {getWindCondition(windData.speed).emoji} {getWindCondition(windData.speed).status}
+                                {surfUtils.getWindCondition(windData.speed).emoji} {surfUtils.getWindCondition(windData.speed).status}
                             </div>
                         </div>
                     ) : (

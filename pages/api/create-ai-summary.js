@@ -36,26 +36,26 @@ export default async function handler(req, res) {
 
     try {
         const { summary, surfData } = req.body;
-        
+
         // Debug logging with timestamp
         const timestamp = new Date().toISOString();
         console.log(`[${timestamp}] validate-summary called with summary length: ${summary?.length || 0}`);
-        
+
         // Check for duplicate calls in rapid succession
         const callKey = getCacheKey(summary, surfData);
         const lastCall = validationCallsLog.get(callKey);
         const now = Date.now();
-        
+
         if (lastCall && (now - lastCall) < DUPLICATE_PROTECTION_WINDOW) {
             console.log(`[${timestamp}] Duplicate call detected within ${DUPLICATE_PROTECTION_WINDOW}ms, ignoring`);
-            return res.status(429).json({ 
+            return res.status(429).json({
                 error: 'Duplicate request',
                 validatedSummary: summary,
                 wasValidated: false,
                 reason: 'Duplicate call protection'
             });
         }
-        
+
         validationCallsLog.set(callKey, now);
 
         if (!summary) {
@@ -102,7 +102,7 @@ Rules:
 
         // Check if OPENAI_API_KEY is configured
         if (typeof process.env.OPENAI_API_KEY !== 'string' || process.env.OPENAI_API_KEY.length === 0) {
-            const fallbackResult = { 
+            const fallbackResult = {
                 validatedSummary: summary,
                 wasValidated: false,
                 fallback: true,
@@ -128,7 +128,7 @@ Rules:
                         content: 'You are a grumpy surf report editor who ensures surf summaries are grammatically correct and readable while maintaining their authentic surf culture voice, but you\'re also really into crystals and vibes. Make sure to provide a stoke rating and recommend a crystal of the day based on the summary vibe.'
                     },
                     {
-                        role: 'user', 
+                        role: 'user',
                         content: validationPrompt
                     }
                 ],
@@ -138,7 +138,7 @@ Rules:
         });
 
         if (!aiResponse.ok) {
-            const fallbackResult = { 
+            const fallbackResult = {
                 validatedSummary: summary,
                 wasValidated: false,
                 fallback: true,
@@ -153,7 +153,7 @@ Rules:
         const validatedSummary = aiData.choices?.[0]?.message?.content?.trim();
 
         if (!validatedSummary || validatedSummary.length === 0) {
-            const fallbackResult = { 
+            const fallbackResult = {
                 validatedSummary: summary,
                 wasValidated: false,
                 fallback: true,
@@ -164,36 +164,36 @@ Rules:
             return res.status(200).json(fallbackResult);
         }
 
-        // Basic sanity check - if AI response is dramatically different or too long, use original
-        // Allow more length for stoke rating addition
-        if (validatedSummary.length > summary.length * 2.0 || validatedSummary.length > 400) {
-            const fallbackResult = { 
+        // Basic sanity check - only reject if way too long or too short
+        // Allow longer responses for formatted output with stoke rating, haiku, and crystal
+        if (validatedSummary.length > 500 || validatedSummary.length < 10) {
+            const fallbackResult = {
                 validatedSummary: summary,
                 wasValidated: false,
                 fallback: true,
-                reason: 'AI response too different from original'
+                reason: 'AI response invalid length'
             };
             // Cache fallback result
             setCachedResult(cacheKey, fallbackResult);
             return res.status(200).json(fallbackResult);
         }
 
-        const result = { 
+        const result = {
             validatedSummary: validatedSummary,
             wasValidated: true,
             originalLength: summary.length,
             validatedLength: validatedSummary.length
         };
-        
+
         // Cache the successful result
         setCachedResult(cacheKey, result);
-        
+
         res.status(200).json(result);
 
     } catch (error) {
         console.error('Validation API error:', error.message);
         // Always fallback to original summary on error
-        const fallbackResult = { 
+        const fallbackResult = {
             validatedSummary: req.body.summary,
             wasValidated: false,
             fallback: true,
