@@ -117,9 +117,8 @@ export default function SurfConditions() {
             // Determine wind category
             let windCategory = 'unknown';
             if (windSpeed < 5) windCategory = 'offshore';
-            else if (windSpeed < 10) windCategory = 'light';
-            else if (windSpeed < 15) windCategory = 'moderate';
-            else windCategory = 'onshore';
+            else if (windSpeed < 7) windCategory = 'light';
+            else windCategory = 'onshore'; // >=7kts is unsurfable
 
             // Determine size category
             let sizeCategory = 'unknown';

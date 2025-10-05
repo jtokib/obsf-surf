@@ -60,12 +60,10 @@ function generateFallbackPrediction(conditions) {
         score += 0.25;
     } else if (wind_category === 'light') {
         score += 0.15;
-    } else if (wind_category === 'moderate') {
-        score += 0.05;
-        issues.push("Moderate wind");
     } else {
-        score = Math.min(score, 0.2); // Cap score for strong onshore
-        issues.push("Strong onshore wind");
+        // >=7kts wind - unsurfable, force low score
+        score = 0;
+        issues.push("Wind too strong (≥7kts)");
     }
 
     // Normalize score to 0-1
