@@ -34,7 +34,7 @@ export default function SurfConditions() {
 
     const fetchBuoyData = async () => {
         try {
-            const response = await fetch('/api/buoy');
+            const response = await fetch('/api/data/buoy');
             const data = await response.json();
             
             // Check if the response indicates an error (503 or error field)
@@ -53,7 +53,7 @@ export default function SurfConditions() {
 
     const fetchPtReyesBuoyData = async () => {
         try {
-            const response = await fetch('/api/buoy?station=029');
+            const response = await fetch('/api/data/buoy?station=029');
             const data = await response.json();
             if (!response.ok || data.error) {
                 setPtReyesBuoyData(null);
@@ -68,7 +68,7 @@ export default function SurfConditions() {
 
     const fetchTideData = async () => {
         try {
-            const response = await fetch('/api/tide');
+            const response = await fetch('/api/data/tide');
             const data = await response.json();
             setTideData(data);
             
@@ -86,7 +86,7 @@ export default function SurfConditions() {
 
     const fetchWindData = async () => {
         try {
-            const response = await fetch('/api/wind');
+            const response = await fetch('/api/data/wind');
             const data = await response.json();
             setWindData(data);
         } catch (error) {

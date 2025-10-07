@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { createAISummary, surfUtils } from './surfApi';
+import { createBasicSurfSummary } from '../lib/utils/formatting.js';
 
 const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictionLoading, loading }) => {
     // Helper functions for surf prediction display - imported from surfUtils
@@ -100,19 +101,8 @@ const SurfAISummary = ({ buoyData, windData, tideData, surfPrediction, predictio
                     windSpeed: parseFloat(windData?.speed) || 0,
                     windDirection: windData?.direction || 0
                 };
-                
-                // Create a proper basic surf conditions summary for AI to enhance
-                const createBasicSummary = (buoyData, windData, tideData, surfData) => {
-                    const waveHeight = surfData.waveHeight.toFixed(1);
-                    const wavePeriod = surfData.wavePeriod;
-                    const windSpeed = surfData.windSpeed;
-                    const windDir = windData?.directionText || surfUtils.getWindDirectionText(surfData.windDirection);
-                    const tideDirection = surfUtils.getCurrentTideDirection(tideData);
-                    
-                    return `Current surf conditions: ${waveHeight}ft waves at ${wavePeriod}s period, ${windSpeed}kt ${windDir} wind, tide ${tideDirection}`;
-                };
-                
-                const basicSummary = createBasicSummary(buoyData, windData, tideData, surfData);
+
+                const basicSummary = createBasicSurfSummary(buoyData, windData, tideData, surfData);
                 createAISummary(basicSummary, surfData)
                     .then(result => {
                         if (validationTimeoutRef.current) {

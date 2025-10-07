@@ -39,8 +39,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## 🏗️ Project Structure
 
 - **Pages Router**: Uses Next.js pages directory structure (not App Router)
-- **API Routes**: Located in `pages/api/` for surf data endpoints
+- **API Routes**: Organized in `pages/api/` subdirectories:
+  - `pages/api/ai/` - AI-powered features (OpenAI integration)
+  - `pages/api/data/` - Data endpoints (buoy, tide, wind, predictions)
+  - `pages/api/seo/` - SEO endpoints (sitemap, robots)
 - **Components**: Reusable React components in `/components`
+- **Library**: Business logic and utilities in `/lib`:
+  - `lib/services/` - Service layer (OpenAI, external APIs)
+  - `lib/utils/` - Utility functions (surf calculations, formatting)
+  - `lib/constants.js` - Application constants and configuration
 - **Styling**: Global CSS with retro styling and Framer Motion animations
 
 ### Key Components
@@ -53,13 +60,18 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### API Endpoints
 
-- `/api/buoy` - Multi-station buoy data with support for SF Bar (142) and Pt Reyes (029) stations
-- `/api/wind` - Wind conditions with multiple fallback sources
-- `/api/tide` - Tide predictions with comprehensive analysis and real-time calculations
-- `/api/surf-predictor` - Surf predictions with local fallback logic when Cloud Function fails
-- `/api/validate-summary` - AI-powered summary validation using OpenAI (optional)
-- `/api/sitemap` - Dynamic sitemap generation
-- `/api/robots` - Robots.txt generation
+#### Data Endpoints (`/api/data/`)
+- `/api/data/buoy` - Multi-station buoy data with support for SF Bar (142) and Pt Reyes (029) stations
+- `/api/data/wind` - Wind conditions with multiple fallback sources
+- `/api/data/tide` - Tide predictions with comprehensive analysis and real-time calculations
+- `/api/data/predict` - Surf predictions with local fallback logic when Cloud Function fails
+
+#### AI Endpoints (`/api/ai/`)
+- `/api/ai/create-ai-summary` - AI-powered surf summary generation using OpenAI GPT-3.5-turbo (optional)
+
+#### SEO Endpoints (`/api/seo/`)
+- `/api/seo/sitemap` - Dynamic sitemap generation
+- `/api/seo/robots` - Robots.txt generation
 
 ## 🌊 Data Sources
 
