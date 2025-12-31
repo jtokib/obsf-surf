@@ -90,4 +90,4 @@ This is a Next.js surf conditions website for Ocean Beach, San Francisco. The ap
 - **External Documentation**: Prompts folder contains fixes for external project issues
 
 ### Git Configuration
-- Remote is named dev main not origin master
+- Remote is origin main (not origin master)
