@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import Image from 'next/image'
 import Layout from '../components/Layout'
 import StatusBar from '../components/StatusBar'
 import ConditionCards from '../components/ConditionCards'
@@ -21,13 +22,25 @@ export default function Home({ initialBuoy, initialWind, initialTide, initialPtR
             </Head>
 
             <main>
-                {/* Above fold — server-rendered, no JS required for first paint */}
+                {/* Hero with logo — full-width background, LCP image */}
+                <div className="ocean-hero">
+                    <div className="container">
+                        <div className="hero-logo">
+                            <Image
+                                src="/images/website/obsf.png"
+                                alt="OBSF Surf Conditions"
+                                width={400}
+                                height={240}
+                                priority
+                                style={{ objectFit: 'contain' }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Server-rendered conditions — no loading states */}
                 <div className="above-fold">
                     <div className="container">
-                        <div className="site-header">
-                            <span className="site-wordmark">obsf.surf</span>
-                            <span className="site-tagline">Ocean Beach &middot; San Francisco</span>
-                        </div>
                         <StatusBar
                             buoy={initialBuoy}
                             wind={initialWind}
@@ -43,7 +56,7 @@ export default function Home({ initialBuoy, initialWind, initialTide, initialPtR
                     </div>
                 </div>
 
-                {/* Below fold — tabs, personality, detail views */}
+                {/* Dashboard — tabs, personality, detail views */}
                 <div className="main-content">
                     <div className="container">
                         <SurfDashboard
@@ -55,9 +68,6 @@ export default function Home({ initialBuoy, initialWind, initialTide, initialPtR
                         />
                     </div>
                 </div>
-
-                {/* Decorative ocean background — lazy, below fold */}
-                <div className="ocean-hero" aria-hidden="true" />
             </main>
         </Layout>
     )

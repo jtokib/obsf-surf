@@ -134,33 +134,10 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Above-fold section — server-rendered, no hero overlap */
+/* Above-fold section — server-rendered, sits below the hero */
 .above-fold {
-    padding: 2rem 0 1.5rem;
+    padding: 1.5rem 0 1rem;
     background: var(--bg-primary);
-}
-
-/* Site wordmark header */
-.site-header {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
-}
-
-.site-wordmark {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: var(--text-primary);
-    letter-spacing: -0.03em;
-}
-
-.site-tagline {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin: 0;
-    font-weight: 400;
 }
 
 /* Status Bar */
@@ -311,15 +288,19 @@ a:hover {
     animation: fadeSlideIn 0.25s ease both;
 }
 
-/* Full-width Ocean Background — decorative, below fold */
+/* Full-width Ocean Hero — top of page with logo */
 .ocean-hero {
+    position: relative;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
-    height: 30vh;
-    min-height: 200px;
-    max-height: 320px;
+    height: 45vh;
+    min-height: 300px;
+    max-height: 450px;
     background: url('https://images.unsplash.com/photo-1489057136002-df4191d1622f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
-    margin-top: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 
@@ -993,14 +974,14 @@ a:hover {
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-    .above-fold {
-        padding: 1.5rem 0 1rem;
+    .ocean-hero {
+        height: 35vh;
+        min-height: 250px;
+        max-height: 350px;
     }
 
-    .site-header {
-        flex-direction: column;
-        gap: 0.25rem;
-        margin-bottom: 1rem;
+    .above-fold {
+        padding: 1.25rem 0 0.75rem;
     }
 
     .status-bar {
