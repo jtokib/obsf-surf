@@ -1,61 +1,37 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 
 export default function Layout({ children }) {
     const [darkMode, setDarkMode] = useState(true);
-    const [scanlineEffect, setScanlineEffect] = useState(false);
 
     useEffect(() => {
-        // Check localStorage for dark mode preference, default to dark mode
-        const savedMode = localStorage.getItem('dm');
-        if (savedMode !== null) {
-            setDarkMode(savedMode === '1');
+        const saved = localStorage.getItem('dm');
+        if (saved !== null) {
+            setDarkMode(saved === '1');
         } else {
-            // No saved preference, default to dark mode and save it
-            setDarkMode(true);
             localStorage.setItem('dm', '1');
         }
-
-        // Add scanline effect periodically
-        const scanlineInterval = setInterval(() => {
-            setScanlineEffect(true);
-            setTimeout(() => setScanlineEffect(false), 3000);
-        }, 15000);
-
-
-        return () => {
-            clearInterval(scanlineInterval);
-        };
     }, []);
 
     useEffect(() => {
-        // Apply theme classes to body
-        if (darkMode) {
-            document.body.className = 'dark-mode';
-        } else {
-            document.body.className = 'light-mode';
-        }
+        document.body.className = darkMode ? 'dark-mode' : 'light-mode';
     }, [darkMode]);
 
     const toggleDarkMode = () => {
-        const newMode = !darkMode;
-        setDarkMode(newMode);
-        localStorage.setItem('dm', newMode ? '1' : '0');
+        const next = !darkMode;
+        setDarkMode(next);
+        localStorage.setItem('dm', next ? '1' : '0');
     };
 
-
     return (
-        <div className={`layout ${darkMode ? 'dark-mode' : 'light-mode'} ${scanlineEffect ? 'scanline-effect' : ''}`}>
+        <div className={`layout ${darkMode ? 'dark-mode' : 'light-mode'}`}>
             {children}
-
 
             <footer className="footer">
                 <div className="container">
                     <p className="footer-text">
-                        Ocean Beach SF Surf Conditions |
-                        &copy;{new Date().getFullYear()}&nbsp;|&nbsp;
+                        Ocean Beach, San Francisco &middot; obsuf.surf &middot;&nbsp;
                         <span onClick={toggleDarkMode} className="clickable">
-                            {darkMode ? '🌅 Light Mode' : '🌙 Dark Mode'}
+                            {darkMode ? 'Light Mode' : 'Dark Mode'}
                         </span>
                     </p>
                 </div>

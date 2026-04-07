@@ -4,7 +4,7 @@ export { default as surfUtils } from '../lib/utils/surfUtils.js';
 
 export async function createAISummary(summary, surfData) {
     try {
-        const response = await fetch('/api/ai/create-ai-summary', {
+        const response = await fetch('/api/personality', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -16,9 +16,7 @@ export async function createAISummary(summary, surfData) {
         }
         const data = await response.json();
         return data;
-    } catch (error) {
-        console.warn('AI summary creation failed:', error);
+    } catch {
         return { validatedSummary: summary, wasValidated: false };
     }
 }
-

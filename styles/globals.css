@@ -10,6 +10,12 @@
     --charcoal: #2c3e50;
     --sea-glass: #a8dadc;
     --coral: #ff6b6b;
+
+    /* Status colors */
+    --electric-green: #00c87a;
+    --neon-cyan: #7dd3c0;
+    --sunset-orange: #f4a261;
+    --coral-pink: #e63946;
     
     /* Light mode (default) */
     --bg-primary: var(--warm-white);
@@ -128,19 +134,192 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Full-width Ocean Background */
-.ocean-hero {
-    position: relative;
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    height: 45vh;
-    min-height: 300px;
-    max-height: 450px;
-    background: url('https://images.unsplash.com/photo-1489057136002-df4191d1622f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+/* Above-fold section — server-rendered, no hero overlap */
+.above-fold {
+    padding: 2rem 0 1.5rem;
+    background: var(--bg-primary);
+}
+
+/* Site wordmark header */
+.site-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.site-wordmark {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+}
+
+.site-tagline {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Status Bar */
+.status-bar {
     display: flex;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    background: var(--surface-elevated);
+    border: 1px solid rgba(125, 211, 192, 0.15);
+    border-radius: 12px;
+    padding: 0.875rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.status-left {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    flex-wrap: wrap;
+}
+
+.verdict-pill {
+    display: inline-block;
+    padding: 0.35rem 0.875rem;
+    border-radius: 20px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.verdict-pill.go {
+    background: linear-gradient(135deg, #00c87a, #00a062);
+    color: #003d1a;
+}
+
+.verdict-pill.skip {
+    background: linear-gradient(135deg, #e63946, #c62e3a);
+    color: #fff;
+}
+
+.status-conditions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-item {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.status-na {
+    font-style: italic;
+    opacity: 0.6;
+}
+
+.status-updated {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Condition card inline data labels */
+.condition-quality {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+.data-na {
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+.data-offline {
+    font-size: 1.2rem;
+    color: var(--sunset-orange);
+}
+
+/* Personality section */
+.personality-section {
+    margin: 0 0 1.5rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--surface-elevated);
+    border: 1px solid rgba(125, 211, 192, 0.15);
+    border-radius: 16px;
+}
+
+.personality-content {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.personality-skeleton {
+    height: 80px;
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        var(--bg-secondary) 25%,
+        rgba(125, 211, 192, 0.1) 50%,
+        var(--bg-secondary) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.tide-skeleton {
+    height: 200px;
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        var(--bg-secondary) 25%,
+        rgba(125, 211, 192, 0.1) 50%,
+        var(--bg-secondary) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* TideTable row fade-in animation (replaces Framer Motion) */
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.tide-row {
+    animation: fadeSlideIn 0.25s ease both;
+}
+
+/* Full-width Ocean Background — decorative, below fold */
+.ocean-hero {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    height: 30vh;
+    min-height: 200px;
+    max-height: 320px;
+    background: url('https://images.unsplash.com/photo-1489057136002-df4191d1622f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+    margin-top: 3rem;
 }
 
 
@@ -202,11 +381,8 @@ a:hover {
 
 /* Main Content */
 .main-content {
-    background: var(--surface);
-    margin-top: -60px;
+    background: var(--bg-primary);
     padding: 0 0 var(--section-padding) 0;
-    position: relative;
-    z-index: 1;
 }
 
 /* Cards */
@@ -248,7 +424,7 @@ a:hover {
     transform: translateY(-1px);
 }
 
-/* Surf Conditions */
+/* Surf Conditions / Dashboard */
 .surf-conditions {
     margin: 2rem 0;
     background: var(--surface-elevated);
@@ -256,6 +432,13 @@ a:hover {
     padding: 2rem;
     box-shadow: var(--shadow-soft);
     border: 1px solid rgba(125, 211, 192, 0.1);
+}
+
+/* Clickable elements */
+.clickable {
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .conditions-summary {
@@ -306,22 +489,18 @@ a:hover {
 
 .tab {
     flex: 1;
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
     background: transparent;
     border: none;
     cursor: pointer;
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     color: var(--text-secondary);
-    transition: all 0.3s ease;
+    transition: color 0.2s ease, background 0.2s ease;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
 }
 
 .tab:hover {
@@ -814,44 +993,58 @@ a:hover {
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-    .hero-section {
-        padding: 2rem 0;
+    .above-fold {
+        padding: 1.5rem 0 1rem;
+    }
+
+    .site-header {
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .status-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .status-conditions {
+        gap: 0.5rem;
     }
 
     .conditions-summary {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
     }
 
     .tabs {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 
     .tab {
-        flex-direction: row;
-        justify-content: center;
-        padding: 1rem;
+        flex: 1 1 auto;
+        padding: 0.875rem 0.75rem;
     }
 
     .tab-content {
-        padding: 1.5rem;
+        padding: 1.25rem;
     }
 
     .ocean-hero {
-        height: 35vh;
-        min-height: 250px;
-        max-height: 350px;
+        height: 25vh;
+        min-height: 160px;
+        margin-top: 2rem;
     }
 
     .main-content {
-        margin-top: -40px;
         padding: 0 0 var(--section-padding) 0;
     }
 
     .tide-graph-container,
     .tide-table-container {
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
     }
 
     .tide-row {
@@ -863,27 +1056,13 @@ a:hover {
     }
 
     .header-cell {
-        padding: 0.8rem 0.5rem;
+        padding: 0.75rem 0.5rem;
         font-size: 0.8rem;
     }
 
-    .surf-prediction-display {
-        flex-direction: row;
-        align-items: center;
-        gap: 1rem;
-        margin-top: 0.5rem;
-    }
-
-    .recommendation {
-        font-size: 0.8rem;
-    }
-
-    .recommendation-emoji {
-        font-size: 1rem;
-    }
-
-    .confidence-display {
-        font-size: 0.7rem;
+    .personality-content {
+        flex-direction: column;
+        gap: 0.75rem;
     }
 }
 
@@ -892,25 +1071,16 @@ a:hover {
         padding: 0 1rem;
     }
 
-    .hero-title {
-        font-size: clamp(2rem, 8vw, 3rem);
-    }
-
-    .hero-logo img {
-        max-width: 90%;
-        border-radius: 8px;
+    .conditions-summary {
+        grid-template-columns: 1fr;
     }
 
     .condition-item {
-        padding: 1.5rem 1rem;
+        padding: 1.25rem 1rem;
     }
 
     .tide-height {
         font-size: 1.5rem !important;
-    }
-
-    .tide-direction {
-        font-size: 0.9rem !important;
     }
 
     .stoke-rating,
@@ -920,10 +1090,6 @@ a:hover {
 
     .surf-haiku {
         font-size: 0.9rem !important;
-    }
-
-    .main-content {
-        padding: 2rem 0;
     }
 }
 

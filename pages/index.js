@@ -1,35 +1,94 @@
-import Head from 'next/head';
-import Layout from '../components/Layout';
-import HeroSection from '../components/HeroSection';
-import SurfConditions from '../components/SurfConditions';
+import Head from 'next/head'
+import Layout from '../components/Layout'
+import StatusBar from '../components/StatusBar'
+import ConditionCards from '../components/ConditionCards'
+import SurfDashboard from '../components/SurfDashboard'
+import { fetchBuoyData, fetchTideData, fetchWindData, calculateCurrentTideState } from '../lib/serverFetch'
 
-export default function Home() {
+export default function Home({ initialBuoy, initialWind, initialTide, initialPtReyes, initialTideState, fetchedAt }) {
     return (
         <Layout>
             <Head>
-                <title>Ocean Beach SF Surf Conditions | Real-time Surf Reports</title>
-                <meta property="og:title" content="Ocean Beach SF Surf Conditions | Real-time Surf Reports" />
-                <meta property="og:description" content="Real-time surf conditions, buoy data, tides, and wind reports for Ocean Beach, San Francisco. Get the latest wave heights, periods, and surf forecasts." />
+                <title>Ocean Beach Surf &middot; SF</title>
+                <meta property="og:title" content="Ocean Beach Surf · SF" />
+                <meta
+                    property="og:description"
+                    content="Real-time surf conditions for Ocean Beach, San Francisco. Wave heights, wind, tides."
+                />
                 <meta property="og:image" content="https://obsuf.surf/og-image.jpg" />
                 <meta property="og:url" content="https://obsuf.surf" />
                 <meta name="twitter:card" content="summary_large_image" />
             </Head>
 
             <main>
-                {/* Full-width ocean hero section with beautiful imagery */}
-                <div className="ocean-hero">
+                {/* Above fold — server-rendered, no JS required for first paint */}
+                <div className="above-fold">
                     <div className="container">
-                        <HeroSection />
+                        <div className="site-header">
+                            <span className="site-wordmark">obsf.surf</span>
+                            <span className="site-tagline">Ocean Beach &middot; San Francisco</span>
+                        </div>
+                        <StatusBar
+                            buoy={initialBuoy}
+                            wind={initialWind}
+                            tide={initialTideState}
+                            fetchedAt={fetchedAt}
+                        />
+                        <ConditionCards
+                            buoy={initialBuoy}
+                            wind={initialWind}
+                            tide={initialTideState}
+                            ptReyes={initialPtReyes}
+                        />
                     </div>
                 </div>
-                
-                {/* Main content section */}
+
+                {/* Below fold — tabs, personality, detail views */}
                 <div className="main-content">
                     <div className="container">
-                        <SurfConditions />
+                        <SurfDashboard
+                            initialBuoy={initialBuoy}
+                            initialWind={initialWind}
+                            initialTide={initialTide}
+                            initialPtReyes={initialPtReyes}
+                            initialTideState={initialTideState}
+                        />
                     </div>
                 </div>
+
+                {/* Decorative ocean background — lazy, below fold */}
+                <div className="ocean-hero" aria-hidden="true" />
             </main>
         </Layout>
-    );
+    )
+}
+
+export async function getServerSideProps({ res }) {
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60')
+
+    const [buoyResult, windResult, tideResult, ptReyesResult] = await Promise.allSettled([
+        fetchBuoyData('142'),
+        fetchWindData(),
+        fetchTideData(),
+        fetchBuoyData('029'),
+    ])
+
+    const initialBuoy = buoyResult.status === 'fulfilled' ? buoyResult.value : null
+    const initialWind = windResult.status === 'fulfilled' ? windResult.value : null
+    const initialTide = tideResult.status === 'fulfilled' ? tideResult.value : null
+    const initialPtReyes = ptReyesResult.status === 'fulfilled' ? ptReyesResult.value : null
+
+    const initialTideState =
+        initialTide?.predictions ? calculateCurrentTideState(initialTide.predictions) : null
+
+    return {
+        props: {
+            initialBuoy,
+            initialWind,
+            initialTide,
+            initialPtReyes,
+            initialTideState,
+            fetchedAt: Date.now(),
+        },
+    }
 }
