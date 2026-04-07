@@ -29,7 +29,7 @@ export default function Layout({ children }) {
             <footer className="footer">
                 <div className="container">
                     <p className="footer-text">
-                        Ocean Beach, San Francisco &middot; obsuf.surf &middot;&nbsp;
+                        Ocean Beach, San Francisco &middot; obsf.surf &middot;&nbsp;
                         <span onClick={toggleDarkMode} className="clickable">
                             {darkMode ? 'Light Mode' : 'Dark Mode'}
                         </span>
