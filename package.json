@@ -11,7 +11,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@next/third-parties": "^15.4.3",
+    "@next/third-parties": "^16.2.2",
     "@vercel/speed-insights": "^1.2.0",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.2",
@@ -26,8 +26,8 @@
     "@testing-library/react": "^16.3.0",
     "autoprefixer": "^10.4.21",
     "babel-jest": "^30.0.5",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^15.4.1",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.2.2",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
